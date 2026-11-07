@@ -11,12 +11,15 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -30,6 +33,7 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
             new ModelLayerLocation(new ResourceLocation(AlastorStaffMod.MODID, "shadow_tentacle"), "main");
     private static final ResourceLocation TEX = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/tentacle.png");
     private static final ResourceLocation GLOW = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/tentacle_glow.png");
+    private static final ResourceLocation POOL = new ResourceLocation(AlastorStaffMod.MODID, "textures/fx/glow_pool.png");
     private static final int SEGMENTS = 16;
 
     private final ModelPart segment;
@@ -85,12 +89,26 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
                     .add(new Vector3f(side2).mul(sway2));
         }
 
-        drawPass(ps, buffers.getBuffer(RenderType.entityCutoutNoCull(TEX)), pts, thick, age, light);
-        drawPass(ps, buffers.getBuffer(RenderType.eyes(GLOW)), pts, thick, age, light);
+        // Pure black body.
+        drawPass(ps, buffers.getBuffer(RenderType.entityCutoutNoCull(TEX)), pts, thick, age, light, 1f, 1f, 0f);
+
+        // Green summoning light: a slightly larger glowing shell + a glowing pool on the ground, fading out.
+        float glow = e.glow(age);
+        if (glow > 0.01f) {
+            drawPass(ps, buffers.getBuffer(RenderType.eyes(GLOW)), pts, thick, age, LightTexture.FULL_BRIGHT, 1.18f, glow, 1f);
+            float r = 1.0f + thick * 1.6f;
+            groundPool(ps, buffers.getBuffer(RenderType.entityTranslucent(POOL)), r, glow);
+        }
         super.render(e, entityYaw, partialTick, ps, buffers, light);
     }
 
-    private void drawPass(PoseStack ps, VertexConsumer vc, Vector3f[] pts, float thick, float age, int light) {
+    /**
+     * @param inflate  width multiplier (glow shell is drawn a bit wider than the body)
+     * @param glow     colour strength for the glow pass (additive: lower = dimmer)
+     * @param baseBias how much brighter the glow is near the root (0 = uniform)
+     */
+    private void drawPass(PoseStack ps, VertexConsumer vc, Vector3f[] pts, float thick, float age, int light,
+                          float inflate, float glow, float baseBias) {
         for (int i = 0; i < SEGMENTS; i++) {
             Vector3f a = pts[i];
             Vector3f d = new Vector3f(pts[i + 1]).sub(a);
@@ -98,7 +116,8 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
             if (segLen < 1.0E-4f) continue;
             d.div(segLen);
             float s = (float) i / SEGMENTS;
-            float w = thick * (1.0f - 0.7f * s);
+            float w = thick * (1.0f - 0.7f * s) * inflate;
+            float c = glow * (1.0f - baseBias * 0.65f * s);
 
             ps.pushPose();
             ps.translate(a.x, a.y, a.z);
@@ -106,12 +125,25 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
             ps.mulPose(Axis.YP.rotation(age * 0.04f + i * 0.5f));
             if (i == SEGMENTS - 1) {
                 ps.scale(w * 1.3f, segLen * 1.6f, w * 1.3f);
-                tipPart.render(ps, vc, light, OverlayTexture.NO_OVERLAY);
+                tipPart.render(ps, vc, light, OverlayTexture.NO_OVERLAY, c, c, c, 1f);
             } else {
                 ps.scale(w, segLen * 1.12f, w);
-                segment.render(ps, vc, light, OverlayTexture.NO_OVERLAY);
+                segment.render(ps, vc, light, OverlayTexture.NO_OVERLAY, c, c, c, 1f);
             }
             ps.popPose();
+        }
+    }
+
+    private static void groundPool(PoseStack ps, VertexConsumer vc, float r, float alpha) {
+        PoseStack.Pose pose = ps.last();
+        Matrix4f m = pose.pose();
+        Matrix3f n = pose.normal();
+        float y = 0.04f;
+        float[][] corners = {{-r, -r, 0, 0}, {-r, r, 0, 1}, {r, r, 1, 1}, {r, -r, 1, 0}};
+        for (float[] k : corners) {
+            vc.vertex(m, k[0], y, k[1]).color(1f, 1f, 1f, alpha).uv(k[2], k[3])
+                    .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
+                    .normal(n, 0f, 1f, 0f).endVertex();
         }
     }
 

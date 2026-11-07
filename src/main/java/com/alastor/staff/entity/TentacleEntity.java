@@ -93,9 +93,20 @@ public class TentacleEntity extends Entity {
         return 1f;
     }
 
+    /** 0..1 strength of the green summoning light: full while emerging, then fades to pure black. */
+    public float glow(float age) {
+        int rise = entityData.get(RISE);
+        if (age < rise) return 1f;
+        return Math.max(0f, 1f - (age - rise) / 12f);
+    }
+
     @Override
     public void tick() {
         super.tick();
+        if (!level().isClientSide && this.tickCount == 1 && level() instanceof net.minecraft.server.level.ServerLevel sl) {
+            sl.sendParticles(com.alastor.staff.fx.ShadowFx.GREEN, getX(), getY() + 0.2, getZ(), 14, 0.45, 0.15, 0.45, 0);
+            sl.sendParticles(net.minecraft.core.particles.ParticleTypes.GLOW, getX(), getY() + 0.3, getZ(), 6, 0.4, 0.3, 0.4, 0.02);
+        }
         if (!level().isClientSide && this.tickCount >= getLife()) this.discard();
     }
 
