@@ -1,5 +1,6 @@
 package com.alastor.staff.skill.task;
 
+import com.alastor.staff.entity.TentacleEntity;
 import com.alastor.staff.fx.ShadowFx;
 import com.alastor.staff.util.Targeting;
 import net.minecraft.core.particles.ParticleTypes;
@@ -78,8 +79,6 @@ public class FractureTask implements SkillTask {
                 Vec3 p = path.get(i);
                 double jag = Math.sin(i * 1.7) * 0.25;
                 Vec3 q = p.add(perp.scale(jag)).add(0, 0.08, 0);
-                level.sendParticles(ShadowFx.BLACK, q.x, q.y, q.z, 2, 0.2, 0.0, 0.2, 0);
-                level.sendParticles(ShadowFx.GREEN_SMALL, q.x, q.y + 0.05, q.z, 1, 0.08, 0.0, 0.08, 0);
                 if (i % 3 == 0) level.sendParticles(ParticleTypes.SCULK_SOUL, q.x, q.y + 0.1, q.z, 1, 0.1, 0.1, 0.1, 0.02);
             }
         }
@@ -112,6 +111,11 @@ public class FractureTask implements SkillTask {
 
     private void explode(ServerLevel level, Vec3 c) {
         level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, c.x, c.y + 1, c.z, 1, 0, 0, 0, 0);
+        for (int k = 0; k < 7; k++) {
+            double a = k * Math.PI * 2 / 7;
+            Vec3 tip = new Vec3(Math.cos(a) * 3.5, 5.5 + (k % 3), Math.sin(a) * 3.5);
+            TentacleEntity.spawn(level, c, tip, 26, 3, 0.9f);
+        }
         level.sendParticles(ShadowFx.BLACK, c.x, c.y + 1, c.z, 150, 2.0, 1.5, 2.0, 0);
         level.sendParticles(ShadowFx.GREEN, c.x, c.y + 1, c.z, 100, 2.0, 1.5, 2.0, 0);
         level.sendParticles(ParticleTypes.SCULK_SOUL, c.x, c.y + 1, c.z, 30, 1.5, 1.0, 1.5, 0.1);

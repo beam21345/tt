@@ -1,6 +1,6 @@
 package com.alastor.staff.item;
 
-import com.alastor.staff.fx.ShadowFx;
+import com.alastor.staff.entity.ShadowFxEntity;
 import com.alastor.staff.skill.RadioDemonAura;
 import com.alastor.staff.skill.SkillType;
 import com.alastor.staff.skill.Skills;
@@ -84,7 +84,7 @@ public class AlastorStaffItem extends Item {
                     .withStyle(on ? ChatFormatting.GREEN : ChatFormatting.GRAY), true);
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
                     on ? SoundEvents.WARDEN_EMERGE : SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 1.0f, on ? 1.3f : 0.8f);
-            if (on) ShadowFx.sigil(server, player.position(), RadioDemonAura.HALF, 0);
+            if (on) ShadowFxEntity.spawn(server, ShadowFxEntity.SIGIL, player.position(), (float) RadioDemonAura.HALF, 40, 6, 0f);
             player.getCooldowns().addCooldown(this, skill.cooldown);
             return InteractionResultHolder.success(stack);
         }

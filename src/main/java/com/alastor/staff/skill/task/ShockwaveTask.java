@@ -33,7 +33,7 @@ public class ShockwaveTask implements SkillTask {
     public boolean tick(ServerLevel level) {
         age++;
         double r = HALF * age / DURATION;
-        int pts = (int) (r * 10) + 10;
+        int pts = (int) (r * 3) + 6;
         ShadowFx.ring(level, center.add(0, 0.3, 0), r, pts, ShadowFx.BLACK, age * 0.1);
         ShadowFx.ring(level, center.add(0, 0.8, 0), r, pts / 2, ShadowFx.GREEN, age * 0.1 + 0.2);
         if (age % 3 == 0) {

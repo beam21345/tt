@@ -1,5 +1,6 @@
 package com.alastor.staff.skill.task;
 
+import com.alastor.staff.entity.TentacleEntity;
 import com.alastor.staff.fx.ShadowFx;
 import com.alastor.staff.util.Targeting;
 import net.minecraft.core.particles.ParticleTypes;
@@ -16,7 +17,9 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,6 +32,7 @@ public class DomainTask implements SkillTask {
     private final Vec3 center;
     private final Map<UUID, Vec3> heldAt = new HashMap<>();
     private final Map<UUID, LivingEntity> held = new HashMap<>();
+    private final Map<UUID, List<TentacleEntity>> wraps = new HashMap<>();
     private int age;
 
     public DomainTask(Player owner, Vec3 center) {
@@ -49,14 +53,13 @@ public class DomainTask implements SkillTask {
                 level.sendParticles(ShadowFx.BLACK, center.x - HALF, y, center.z + t, 1, 0, 0.3, 0, 0);
                 level.sendParticles(ShadowFx.BLACK, center.x + HALF, y, center.z + t, 1, 0, 0.3, 0, 0);
             }
-            for (int i = 0; i < 30; i++) {
+            for (int i = 0; i < 10; i++) {
                 double x = center.x + (rnd.nextDouble() * 2 - 1) * HALF;
                 double z = center.z + (rnd.nextDouble() * 2 - 1) * HALF;
                 level.sendParticles(ShadowFx.BLACK, x, center.y + 0.1, z, 1, 0.2, 0.02, 0.2, 0);
             }
             level.sendParticles(ParticleTypes.SCULK_SOUL, center.x, center.y + 0.2, center.z, 2, HALF * 0.6, 0.1, HALF * 0.6, 0.01);
         }
-        if (age % 6 == 0) ShadowFx.sigil(level, center, 6.0, age * 0.02);
         if (age % 40 == 1) {
             level.playSound(null, center.x, center.y, center.z, SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 1.5f, 0.6f);
         }
@@ -66,6 +69,16 @@ public class DomainTask implements SkillTask {
             if (!held.containsKey(e.getUUID())) {
                 held.put(e.getUUID(), e);
                 heldAt.put(e.getUUID(), e.position());
+                List<TentacleEntity> list = new ArrayList<>();
+                int remaining = DURATION - age + TentacleEntity.FALL_TICKS;
+                for (int k = 0; k < 3; k++) {
+                    double a = k * Math.PI * 2 / 3;
+                    Vec3 root = new Vec3(e.getX() + Math.cos(a) * 1.2, e.getY(), e.getZ() + Math.sin(a) * 1.2);
+                    TentacleEntity t = TentacleEntity.spawn(level, root,
+                            e.position().add(0, e.getBbHeight() * 0.6, 0).subtract(root), remaining, 5, 0.45f);
+                    if (t != null) list.add(t);
+                }
+                wraps.put(e.getUUID(), list);
                 level.playSound(null, e.getX(), e.getY(), e.getZ(), SoundEvents.SOUL_ESCAPE, SoundSource.PLAYERS, 1.0f, 0.5f);
             }
         }
@@ -75,6 +88,8 @@ public class DomainTask implements SkillTask {
             Map.Entry<UUID, LivingEntity> entry = it.next();
             LivingEntity e = entry.getValue();
             if (!e.isAlive() || e.isRemoved()) {
+                List<TentacleEntity> dead = wraps.remove(entry.getKey());
+                if (dead != null) dead.forEach(TentacleEntity::retract);
                 heldAt.remove(entry.getKey());
                 it.remove();
                 continue;
@@ -88,12 +103,12 @@ public class DomainTask implements SkillTask {
             if (e instanceof Mob mob) mob.getNavigation().stop();
             if (age % 20 == 0) Targeting.hurt(owner, e, 2f);
 
-            if (age % 2 == 0) {
+            List<TentacleEntity> list = wraps.get(entry.getKey());
+            if (list != null) {
                 double body = e.getBbHeight() * 0.6;
-                for (int k = 0; k < 3; k++) {
-                    double a = age * 0.15 + k * Math.PI * 2 / 3;
-                    Vec3 base = new Vec3(pin.x + Math.cos(a) * 1.1, pin.y, pin.z + Math.sin(a) * 1.1);
-                    ShadowFx.tentacle(level, base, pin.add(0, body, 0), a);
+                for (int k = 0; k < list.size(); k++) {
+                    double a = age * 0.12 + k * Math.PI * 2 / 3;
+                    list.get(k).reachTo(pin.add(Math.cos(a) * 0.35, body, Math.sin(a) * 0.35));
                 }
             }
         }

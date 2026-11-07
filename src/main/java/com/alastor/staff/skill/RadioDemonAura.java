@@ -1,5 +1,6 @@
 package com.alastor.staff.skill;
 
+import com.alastor.staff.entity.TentacleEntity;
 import com.alastor.staff.fx.ShadowFx;
 import com.alastor.staff.skill.task.GrabThrowTask;
 import com.alastor.staff.skill.task.SkillTaskManager;
@@ -71,7 +72,7 @@ public final class RadioDemonAura {
             proj.hurtMarked = true;
 
             Vec3 root = new Vec3(proj.getX(), c.y, proj.getZ());
-            ShadowFx.tentacle(level, root, proj.position(), now * 0.3);
+            TentacleEntity.spawn(level, root, proj.position().subtract(root), 10, 2, 0.35f);
             level.sendParticles(ShadowFx.GREEN, proj.getX(), proj.getY(), proj.getZ(), 6, 0.2, 0.2, 0.2, 0);
             level.playSound(null, proj.getX(), proj.getY(), proj.getZ(), SoundEvents.WARDEN_ATTACK_IMPACT, SoundSource.PLAYERS, 0.7f, 1.5f);
         }

@@ -26,10 +26,18 @@ jobs:
           echo "MDK_DIR=$MDK_DIR" >> "$GITHUB_ENV"
 
       - name: Build
+        shell: bash
         run: |
           cd "$MDK_DIR"
           chmod +x gradlew
-          ./gradlew build --no-daemon
+          ./gradlew build --no-daemon 2>&1 | tee "$GITHUB_WORKSPACE/build.log"
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
 
       - uses: actions/upload-artifact@v4
         with:

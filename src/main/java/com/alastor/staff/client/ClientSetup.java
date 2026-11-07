@@ -11,8 +11,15 @@ import net.minecraftforge.fml.common.Mod;
 public final class ClientSetup {
 
     @SubscribeEvent
+    public static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(TentacleRenderer.LAYER, TentacleRenderer::createLayer);
+    }
+
+    @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.SHADOW_DEMON.get(), ShadowDemonRenderer::new);
+        event.registerEntityRenderer(ModEntities.TENTACLE.get(), TentacleRenderer::new);
+        event.registerEntityRenderer(ModEntities.SHADOW_FX.get(), ShadowFxRenderer::new);
     }
 
     private ClientSetup() {}
