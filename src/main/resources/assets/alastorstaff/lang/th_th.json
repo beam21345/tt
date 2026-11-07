@@ -1,0 +1,17 @@
+{
+  "item.alastorstaff.alastor_staff": "คทาอลาสเตอร์ (Alastor Staff)",
+  "entity.alastorstaff.shadow_demon": "ปีศาจเงา",
+  "skill.alastorstaff.shadow_tentacles": "Shadow Tentacles - หนวดเงา",
+  "skill.alastorstaff.shadow_summoning": "Shadow Summoning - อัญเชิญปีศาจเงา",
+  "skill.alastorstaff.radio_sound": "Radio Sound - คลื่นวิทยุ",
+  "skill.alastorstaff.shadow_fracture": "Shadow Fracture - รอยแยกเงา",
+  "skill.alastorstaff.shadow_domain": "Shadow Domain - อาณาเขตเงา",
+  "skill.alastorstaff.radio_demon": "Radio Demon - ปีศาจวิทยุ",
+  "msg.alastorstaff.selected": "สกิล %s: %s",
+  "msg.alastorstaff.cooldown": "%s ยังติดคูลดาวน์ (%s วินาที)",
+  "msg.alastorstaff.radio_on": "Radio Demon: เปิด",
+  "msg.alastorstaff.radio_off": "Radio Demon: ปิด",
+  "tooltip.alastorstaff.radio_on": "Radio Demon: กำลังทำงาน",
+  "tooltip.alastorstaff.radio_off": "Radio Demon: ปิดอยู่",
+  "tooltip.alastorstaff.controls": "คลิกขวา: ใช้สกิล | ย่อ + คลิกขวา: เปลี่ยนสกิล"
+}

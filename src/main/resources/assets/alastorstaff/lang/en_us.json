@@ -1,0 +1,17 @@
+{
+  "item.alastorstaff.alastor_staff": "Alastor Staff",
+  "entity.alastorstaff.shadow_demon": "Shadow Demon",
+  "skill.alastorstaff.shadow_tentacles": "Shadow Tentacles",
+  "skill.alastorstaff.shadow_summoning": "Shadow Summoning",
+  "skill.alastorstaff.radio_sound": "Radio Sound",
+  "skill.alastorstaff.shadow_fracture": "Shadow Fracture",
+  "skill.alastorstaff.shadow_domain": "Shadow Domain",
+  "skill.alastorstaff.radio_demon": "Radio Demon",
+  "msg.alastorstaff.selected": "Skill %s: %s",
+  "msg.alastorstaff.cooldown": "%s is on cooldown (%ss)",
+  "msg.alastorstaff.radio_on": "Radio Demon: ON",
+  "msg.alastorstaff.radio_off": "Radio Demon: OFF",
+  "tooltip.alastorstaff.radio_on": "Radio Demon: active",
+  "tooltip.alastorstaff.radio_off": "Radio Demon: inactive",
+  "tooltip.alastorstaff.controls": "Right-click: use skill | Sneak + Right-click: switch skill"
+}

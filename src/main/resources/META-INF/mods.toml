@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="alastorstaff"
+version="1.0.0"
+displayName="Alastor Staff"
+authors="tenten"
+description='''
+Adds a single weapon: the Alastor Staff - a shadow-and-green-aura voodoo staff with 6 skills.
+Right-click: use skill. Sneak + right-click: switch skill.
+'''
+
+[[dependencies.alastorstaff]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.alastorstaff]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.21)"
+    ordering="NONE"
+    side="BOTH"
