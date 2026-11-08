@@ -112,6 +112,15 @@ public class AlastorStaffItem extends Item {
         if (!level.isClientSide && entity instanceof Player player && isRadioOn(stack) && !player.isSpectator()) {
             RadioDemonAura.tick((ServerLevel) level, player);
         }
+        // faint green aura drifting off the staff while it is held
+        if (level.isClientSide && selected && entity.tickCount % 3 == 0) {
+            double yaw = Math.toRadians(entity.getYRot());
+            double sx = entity.getX() - Math.cos(yaw) * 0.45 - Math.sin(yaw) * 0.3;
+            double sz = entity.getZ() - Math.sin(yaw) * 0.45 + Math.cos(yaw) * 0.3;
+            level.addParticle(com.alastor.staff.fx.ShadowFx.GREEN_SMALL,
+                    sx + (level.random.nextDouble() - 0.5) * 0.3, entity.getY() + 1.6 + level.random.nextDouble() * 0.6,
+                    sz + (level.random.nextDouble() - 0.5) * 0.3, 0, 0.02, 0);
+        }
     }
 
     @Override

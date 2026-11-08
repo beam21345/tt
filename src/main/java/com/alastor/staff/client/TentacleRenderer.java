@@ -34,7 +34,7 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
     private static final ResourceLocation TEX = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/tentacle.png");
     private static final ResourceLocation GLOW = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/tentacle_glow.png");
     private static final ResourceLocation POOL = new ResourceLocation(AlastorStaffMod.MODID, "textures/fx/glow_pool.png");
-    private static final int SEGMENTS = 16;
+    private static final int SEGMENTS = 22;
 
     private final ModelPart segment;
     private final ModelPart tipPart;
@@ -44,7 +44,7 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
         ModelPart root = ctx.bakeLayer(LAYER);
         this.segment = root.getChild("segment");
         this.tipPart = root.getChild("tip");
-        this.shadowRadius = 0.4f;
+        this.shadowRadius = 0.8f;
     }
 
     public static LayerDefinition createLayer() {
@@ -77,7 +77,7 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
 
         float phase = e.phase();
         float thick = e.thickness();
-        float amp = Math.min(0.9f, 0.12f * len);
+        float amp = Math.min(1.6f, 0.14f * len);
 
         Vector3f[] pts = new Vector3f[SEGMENTS + 1];
         for (int i = 0; i <= SEGMENTS; i++) {
@@ -116,7 +116,9 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
             if (segLen < 1.0E-4f) continue;
             d.div(segLen);
             float s = (float) i / SEGMENTS;
-            float w = thick * (1.0f - 0.7f * s) * inflate;
+            // thick root, long taper, with gentle muscular bulges along the length
+            float bulge = 1.0f + 0.12f * (float) Math.sin(i * 1.3f - age * 0.35f);
+            float w = thick * (1.0f - 0.78f * s) * bulge * inflate;
             float c = glow * (1.0f - baseBias * 0.65f * s);
 
             ps.pushPose();

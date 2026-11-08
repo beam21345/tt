@@ -17,10 +17,10 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Purely visual ground effect drawn as a textured model:
- * SIGIL (voodoo circle), RING (expanding wave), RIFT (shadow crack), DOMAIN (shadow square).
+ * SIGIL (voodoo circle), RING (expanding wave), RIFT (shadow crack), DOMAIN (shadow circle), PILLAR (light beam).
  */
 public class ShadowFxEntity extends Entity {
-    public static final int SIGIL = 0, RING = 1, RIFT = 2, DOMAIN = 3;
+    public static final int SIGIL = 0, RING = 1, RIFT = 2, DOMAIN = 3, PILLAR = 4;
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> SIZE = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.FLOAT);
@@ -74,7 +74,7 @@ public class ShadowFxEntity extends Entity {
 
     @Override
     public AABB getBoundingBoxForCulling() {
-        return getBoundingBox().inflate(size() + 2);
+        return getBoundingBox().inflate(size() + 2).expandTowards(0, 16, 0);
     }
 
     @Override

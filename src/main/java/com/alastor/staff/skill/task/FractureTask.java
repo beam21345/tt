@@ -1,5 +1,6 @@
 package com.alastor.staff.skill.task;
 
+import com.alastor.staff.entity.ShadowFxEntity;
 import com.alastor.staff.entity.TentacleEntity;
 import com.alastor.staff.fx.ShadowFx;
 import com.alastor.staff.util.Targeting;
@@ -58,7 +59,14 @@ public class FractureTask implements SkillTask {
             curY = Targeting.groundY(level, flat.x, curY, flat.z);
             Vec3 head = new Vec3(flat.x, curY, flat.z);
             path.add(head);
-            level.sendParticles(ParticleTypes.SQUID_INK, head.x, head.y + 0.2, head.z, 4, 0.3, 0.05, 0.3, 0.02);
+            level.sendParticles(ParticleTypes.SQUID_INK, head.x, head.y + 0.2, head.z, 10, 0.6, 0.05, 0.6, 0.06);
+            level.sendParticles(ShadowFx.GREEN, head.x, head.y + 0.4, head.z, 6, 0.4, 0.3, 0.4, 0);
+            if (age % 3 == 0) {
+                // tentacles lash out of the crack on alternating sides as it races forward
+                double side = (age / 3) % 2 == 0 ? 1 : -1;
+                Vec3 tip = perp.scale(side * 2.2).add(dir.scale(1.0)).add(0, 4.5, 0);
+                TentacleEntity.spawn(level, head, tip, 18, 3, 1.0f);
+            }
             if (age % 3 == 0) {
                 level.playSound(null, head.x, head.y, head.z, SoundEvents.SCULK_CATALYST_BLOOM, SoundSource.PLAYERS, 1.0f, 0.5f);
             }
@@ -67,6 +75,8 @@ public class FractureTask implements SkillTask {
             for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box, x -> Targeting.isValid(owner, x))) {
                 if (!swallowed.containsKey(e.getUUID())) {
                     swallowed.put(e.getUUID(), e);
+                    TentacleEntity grab = TentacleEntity.spawn(level, head, e.position().add(0, e.getBbHeight() * 0.6, 0).subtract(head), 10, 2, 0.7f);
+                    if (grab != null) grab.retract();
                     level.sendParticles(ShadowFx.BLACK, e.getX(), e.getY() + 0.5, e.getZ(), 20, 0.4, 0.6, 0.4, 0);
                     level.playSound(null, e.getX(), e.getY(), e.getZ(), SoundEvents.SOUL_ESCAPE, SoundSource.PLAYERS, 1.0f, 0.6f);
                 }
@@ -110,11 +120,16 @@ public class FractureTask implements SkillTask {
     }
 
     private void explode(ServerLevel level, Vec3 c) {
-        level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, c.x, c.y + 1, c.z, 1, 0, 0, 0, 0);
-        for (int k = 0; k < 7; k++) {
-            double a = k * Math.PI * 2 / 7;
-            Vec3 tip = new Vec3(Math.cos(a) * 3.5, 5.5 + (k % 3), Math.sin(a) * 3.5);
-            TentacleEntity.spawn(level, c, tip, 26, 3, 0.9f);
+        level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, c.x, c.y + 1, c.z, 2, 0.5, 0.5, 0.5, 0);
+        level.sendParticles(ParticleTypes.SONIC_BOOM, c.x, c.y + 1.5, c.z, 3, 1.0, 0.5, 1.0, 0);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, c, 2.2f, 34, 6, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, c, 5f, 44, 6, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, c, 9f, 18, 12, 0f);
+        for (int k = 0; k < 10; k++) {
+            double a = k * Math.PI * 2 / 10;
+            double reach = 4.5 + (k % 2) * 1.5;
+            Vec3 tip = new Vec3(Math.cos(a) * reach, 8 + (k % 3) * 2, Math.sin(a) * reach);
+            TentacleEntity.spawn(level, c.add(Math.cos(a) * 0.8, 0, Math.sin(a) * 0.8), tip, 32, 3, 1.6f);
         }
         level.sendParticles(ShadowFx.BLACK, c.x, c.y + 1, c.z, 150, 2.0, 1.5, 2.0, 0);
         level.sendParticles(ShadowFx.GREEN, c.x, c.y + 1, c.z, 100, 2.0, 1.5, 2.0, 0);

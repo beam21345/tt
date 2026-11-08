@@ -1,6 +1,15 @@
 {
-  "parent": "minecraft:item/handheld",
-  "textures": {
-    "layer0": "alastorstaff:item/alastor_staff"
+  "loader": "forge:separate_transforms",
+  "gui_light": "front",
+  "base": {
+    "parent": "alastorstaff:item/alastor_staff_3d"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "alastorstaff:item/alastor_staff_icon"
+    },
+    "fixed": {
+      "parent": "alastorstaff:item/alastor_staff_icon"
+    }
   }
 }

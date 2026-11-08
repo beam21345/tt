@@ -71,6 +71,12 @@ public class TentacleEntity extends Entity {
         setTip(worldPos.subtract(position()));
     }
 
+    /** Keeps the tentacle out for at least another {@code ticks} ticks (used by followers). */
+    public void keepAlive(int ticks) {
+        int end = this.tickCount + ticks + FALL_TICKS;
+        if (end > getLife()) this.entityData.set(LIFE, end);
+    }
+
     /** Ends the tentacle early: it sinks back into the ground. */
     public void retract() {
         int end = this.tickCount + FALL_TICKS;

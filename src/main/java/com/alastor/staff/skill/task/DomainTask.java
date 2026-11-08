@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** Shadow Domain: a 15x15 field of shadow; anything that enters is pinned in place by tentacles. */
+/** Shadow Domain: a circular field of shadow (15 blocks across); anything inside is pinned by tentacles. */
 public class DomainTask implements SkillTask {
-    private static final double HALF = 7.5;     // 15x15 blocks
+    private static final double HALF = 7.5;     // radius: 15 blocks across
     private static final int DURATION = 200;    // 10 seconds
 
     private final Player owner;
@@ -45,17 +45,21 @@ public class DomainTask implements SkillTask {
         age++;
         RandomSource rnd = level.getRandom();
 
+        if (age <= 24 && age % 2 == 1) {
+            // a wall of tall tentacles rises around the edge, one after another
+            int k = (age - 1) / 2;
+            double a = k * Math.PI * 2 / 12;
+            Vec3 root = new Vec3(center.x + Math.cos(a) * HALF, center.y, center.z + Math.sin(a) * HALF);
+            Vec3 tip = new Vec3(-Math.cos(a) * 1.5, 8 + (k % 3) * 1.5, -Math.sin(a) * 1.5);
+            TentacleEntity.spawn(level, root, tip, DURATION - age + TentacleEntity.FALL_TICKS, 8, 1.3f);
+            level.sendParticles(ShadowFx.GREEN, root.x, root.y + 0.3, root.z, 12, 0.4, 0.3, 0.4, 0);
+        }
         if (age % 2 == 0) {
-            double y = center.y + 0.1;
-            for (double t = -HALF; t <= HALF; t += 0.5) {
-                level.sendParticles(ShadowFx.BLACK, center.x + t, y, center.z - HALF, 1, 0, 0.3, 0, 0);
-                level.sendParticles(ShadowFx.BLACK, center.x + t, y, center.z + HALF, 1, 0, 0.3, 0, 0);
-                level.sendParticles(ShadowFx.BLACK, center.x - HALF, y, center.z + t, 1, 0, 0.3, 0, 0);
-                level.sendParticles(ShadowFx.BLACK, center.x + HALF, y, center.z + t, 1, 0, 0.3, 0, 0);
-            }
+            ShadowFx.ring(level, center.add(0, 0.2, 0), HALF, 40, ShadowFx.BLACK, age * 0.03);
             for (int i = 0; i < 10; i++) {
-                double x = center.x + (rnd.nextDouble() * 2 - 1) * HALF;
-                double z = center.z + (rnd.nextDouble() * 2 - 1) * HALF;
+                double ra = rnd.nextDouble() * Math.PI * 2, rr = Math.sqrt(rnd.nextDouble()) * HALF;
+                double x = center.x + Math.cos(ra) * rr;
+                double z = center.z + Math.sin(ra) * rr;
                 level.sendParticles(ShadowFx.BLACK, x, center.y + 0.1, z, 1, 0.2, 0.02, 0.2, 0);
             }
             level.sendParticles(ParticleTypes.SCULK_SOUL, center.x, center.y + 0.2, center.z, 2, HALF * 0.6, 0.1, HALF * 0.6, 0.01);
@@ -65,7 +69,8 @@ public class DomainTask implements SkillTask {
         }
 
         AABB box = new AABB(center.x - HALF, center.y - 2, center.z - HALF, center.x + HALF, center.y + 5, center.z + HALF);
-        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box, x -> Targeting.isValid(owner, x))) {
+        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box,
+                x -> Targeting.isValid(owner, x) && Math.hypot(x.getX() - center.x, x.getZ() - center.z) <= HALF)) {
             if (!held.containsKey(e.getUUID())) {
                 held.put(e.getUUID(), e);
                 heldAt.put(e.getUUID(), e.position());
@@ -75,7 +80,7 @@ public class DomainTask implements SkillTask {
                     double a = k * Math.PI * 2 / 3;
                     Vec3 root = new Vec3(e.getX() + Math.cos(a) * 1.2, e.getY(), e.getZ() + Math.sin(a) * 1.2);
                     TentacleEntity t = TentacleEntity.spawn(level, root,
-                            e.position().add(0, e.getBbHeight() * 0.6, 0).subtract(root), remaining, 5, 0.45f);
+                            e.position().add(0, e.getBbHeight() * 0.6, 0).subtract(root), remaining, 5, 0.75f);
                     if (t != null) list.add(t);
                 }
                 wraps.put(e.getUUID(), list);
