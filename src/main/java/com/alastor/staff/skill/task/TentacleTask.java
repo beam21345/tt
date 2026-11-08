@@ -78,6 +78,7 @@ public class TentacleTask implements SkillTask {
             level.sendParticles(ParticleTypes.SQUID_INK, base.x, base.y + 0.2, base.z, 25, 0.8, 0.1, 0.8, 0.08);
             level.sendParticles(ParticleTypes.SCULK_SOUL, base.x, base.y + 0.2, base.z, 8, 0.6, 0.1, 0.6, 0.06);
             level.sendParticles(ShadowFx.GREEN, base.x, base.y + 0.3, base.z, 20, 0.7, 0.4, 0.7, 0);
+            if (owner.getRandom().nextFloat() < 0.5f) ShadowFx.crackle(level, base, 2.5, 1);
             level.playSound(null, base.x, base.y, base.z, SoundEvents.WARDEN_ATTACK_IMPACT, SoundSource.PLAYERS, 1.0f, 0.5f);
             level.playSound(null, base.x, base.y, base.z, SoundEvents.SCULK_CATALYST_BLOOM, SoundSource.PLAYERS, 1.2f, 0.6f);
         }
@@ -106,13 +107,14 @@ public class TentacleTask implements SkillTask {
     private void slam(ServerLevel level, Vec3 at) {
         double y = Targeting.groundY(level, at.x, at.y + 1, at.z);
         Vec3 p = new Vec3(at.x, y, at.z);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, p, 4.5f, 14, 8, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, p, 9f, 16, 10, 0f);
+        ShadowFx.crackle(level, p, 5, 3);
         level.sendParticles(ParticleTypes.EXPLOSION, p.x, p.y + 0.5, p.z, 2, 0.8, 0.2, 0.8, 0);
         level.sendParticles(ParticleTypes.SQUID_INK, p.x, p.y + 0.3, p.z, 40, 1.5, 0.2, 1.5, 0.15);
         level.sendParticles(ShadowFx.GREEN, p.x, p.y + 0.5, p.z, 30, 1.5, 0.4, 1.5, 0);
         level.playSound(null, p.x, p.y, p.z, SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 0.9f, 0.6f);
         hit.clear();
-        hitBox(level, new AABB(p.x - 3, p.y - 1, p.z - 3, p.x + 3, p.y + 3, p.z + 3), damage * 0.8f, new Vec3(0, 0.7, 0));
+        hitBox(level, new AABB(p.x - 6, p.y - 1, p.z - 6, p.x + 6, p.y + 4, p.z + 6), damage * 0.8f, new Vec3(0, 0.7, 0));
     }
 
     private void hitBox(ServerLevel level, AABB box, float dmg, Vec3 push) {

@@ -43,39 +43,40 @@ public final class Skills {
         RandomSource rnd = p.getRandom();
         Vec3 look = p.getLookAngle();
         Vec3 flat = Targeting.horizontalLook(p);
-        HitResult hr = p.pick(24.0, 1.0f, false);
+        HitResult hr = p.pick(48.0, 1.0f, false);
         Vec3 aim = hr.getLocation();
 
-        List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(18),
+        List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(36),
                 e -> Targeting.isValid(p, e) && p.hasLineOfSight(e)
                         && e.position().subtract(p.position()).normalize().dot(look) > 0.4);
         targets.sort(Comparator.comparingDouble((LivingEntity e) -> e.distanceToSqr(p)));
 
         // a path of smaller tentacles racing from the caster to the aim point
         Vec3 from = p.position();
-        double dist = Math.min(20, Math.sqrt(from.distanceToSqr(aim)));
-        for (int i = 2; i < dist; i += 3) {
+        double dist = Math.min(40, Math.sqrt(from.distanceToSqr(aim)));
+        for (int i = 2; i < dist; i += 4) {
             Vec3 pt = from.add(flat.scale(i)).add(new Vec3(-flat.z, 0, flat.x).scale((i / 3) % 2 == 0 ? 1.2 : -1.2));
             Vec3 base = new Vec3(pt.x, Targeting.groundY(level, pt.x, p.getY(), pt.z), pt.z);
-            SkillTaskManager.add(level, new TentacleTask(p, base, i, 5.0 + rnd.nextDouble() * 2, 6f, 1.2));
+            SkillTaskManager.add(level, new TentacleTask(p, base, i / 2, 5.0 + rnd.nextDouble() * 2, 6f, 2.4));
         }
 
         int delay = (int) dist, made = 0;
         for (LivingEntity t : targets) {
-            if (made >= 5) break;
+            if (made >= 8) break;
             Vec3 base = new Vec3(t.getX(), Targeting.groundY(level, t.getX(), t.getY(), t.getZ()), t.getZ());
-            SkillTaskManager.add(level, new TentacleTask(p, base, delay, 14.0 + rnd.nextDouble() * 3, 12f, 1.8, flat));
+            SkillTaskManager.add(level, new TentacleTask(p, base, delay, 14.0 + rnd.nextDouble() * 3, 12f, 3.6, flat));
             delay += 2;
             made++;
         }
-        for (int i = made; i < 6; i++) {
-            double a = rnd.nextDouble() * Math.PI * 2, r = 1.5 + rnd.nextDouble() * 3.5;
+        for (int i = made; i < 10; i++) {
+            double a = rnd.nextDouble() * Math.PI * 2, r = 3 + rnd.nextDouble() * 7;
             double x = aim.x + Math.cos(a) * r, z = aim.z + Math.sin(a) * r;
             Vec3 base = new Vec3(x, Targeting.groundY(level, x, aim.y, z), z);
-            SkillTaskManager.add(level, new TentacleTask(p, base, delay, 12.0 + rnd.nextDouble() * 4, 12f, 1.8, flat));
+            SkillTaskManager.add(level, new TentacleTask(p, base, delay, 12.0 + rnd.nextDouble() * 4, 12f, 3.6, flat));
             delay += 2;
         }
-        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, groundAt(level, p), 3.0f, 36, 5, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, groundAt(level, p), 6.0f, 36, 5, 0f);
+        ShadowFx.crackle(level, groundAt(level, p), 4, 4);
         level.sendParticles(ShadowFx.GREEN, p.getX(), p.getY() + 0.3, p.getZ(), 30, 1.2, 0.2, 1.2, 0);
         level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.PLAYERS, 1.2f, 0.5f);
         level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.WARDEN_ROAR, SoundSource.PLAYERS, 0.5f, 1.4f);
@@ -85,11 +86,12 @@ public final class Skills {
     // ---- 2. Shadow Summoning: three summoning rituals, one after another.
     private static boolean shadowSummoning(ServerLevel level, Player p) {
         Vec3 c = groundAt(level, p);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, c, 4.5f, 70, 10, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, c, 9f, 70, 10, 0f);
+        ShadowFx.crackle(level, c, 8, 6);
         for (int i = 0; i < 3; i++) {
             double a = Math.toRadians(p.getYRot() + 90 + i * 120);
-            double x = p.getX() + Math.cos(a) * 3.0;
-            double z = p.getZ() + Math.sin(a) * 3.0;
+            double x = p.getX() + Math.cos(a) * 5.0;
+            double z = p.getZ() + Math.sin(a) * 5.0;
             Vec3 at = new Vec3(x, Targeting.groundY(level, x, p.getY(), z), z);
             SkillTaskManager.add(level, new DelayedTask(i * 6, l -> SkillTaskManager.add(l, new SummonTask(p, at))));
         }
@@ -97,45 +99,59 @@ public final class Skills {
         return true;
     }
 
-    // ---- 3. Radio Sound: staff planted -> pillar of light, three waves, rings of tentacles going outward.
+    // ---- 3. Radio Sound: staff planted -> pillar of light, three waves of green lightning lashing out in every
+    //         direction (40x40), and green light erupting from the ground wherever it strikes.
     private static boolean radioSound(ServerLevel level, Player p) {
-        RandomSource rnd = p.getRandom();
         Vec3 c = groundAt(level, p);
+        Vec3 staffTip = c.add(0, 2.4, 0);
 
-        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, c, 5.0f, 60, 5, 0f);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, c, 1.4f, 36, 6, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, c, 10.0f, 70, 6, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, c, 2.2f, 50, 6, 0f);
         level.sendParticles(ParticleTypes.SONIC_BOOM, c.x, c.y + 1, c.z, 1, 0, 0, 0, 0);
         level.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_SONIC_BOOM, SoundSource.PLAYERS, 2.0f, 0.6f);
+        level.playSound(null, c.x, c.y, c.z, SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, 1.2f, 1.4f);
         SkillTaskManager.add(level, new ShockwaveTask(p, c));
+
         for (int w = 0; w < 3; w++) {
             final int wave = w;
-            SkillTaskManager.add(level, new DelayedTask(w * 7, l -> {
-                ShadowFxEntity.spawn(l, ShadowFxEntity.RING, c, 10.5f, 22, 14, 0f);
-                l.sendParticles(ParticleTypes.SONIC_BOOM, c.x, c.y + 1, c.z, 1, 0, 0, 0, 0);
-                if (wave > 0) l.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_SONIC_BOOM, SoundSource.PLAYERS, 1.2f, 0.8f + wave * 0.15f);
-            }));
-        }
-
-        // concentric rings of tentacles erupting outward
-        double[] radii = {3, 6, 9};
-        int[] counts = {6, 9, 12};
-        for (int ring = 0; ring < radii.length; ring++) {
-            for (int k = 0; k < counts[ring]; k++) {
-                double a = k * Math.PI * 2 / counts[ring] + ring * 0.4;
-                double x = c.x + Math.cos(a) * radii[ring], z = c.z + Math.sin(a) * radii[ring];
-                Vec3 base = new Vec3(x, Targeting.groundY(level, x, c.y, z), z);
-                SkillTaskManager.add(level, new TentacleTask(p, base, 3 + ring * 5 + rnd.nextInt(2),
-                        9.0 + ring + rnd.nextDouble() * 2, 9f, 1.5));
-            }
-        }
-        AABB box = new AABB(c.x - 10, c.y - 2, c.z - 10, c.x + 10, c.y + 5, c.z + 10);
-        int made = 0;
-        for (LivingEntity t : level.getEntitiesOfClass(LivingEntity.class, box, e -> Targeting.isValid(p, e))) {
-            if (made++ >= 6) break;
-            Vec3 base = new Vec3(t.getX(), Targeting.groundY(level, t.getX(), t.getY(), t.getZ()), t.getZ());
-            SkillTaskManager.add(level, new TentacleTask(p, base, 8 + made * 2, 11.0, 10f, 1.6));
+            SkillTaskManager.add(level, new DelayedTask(w * 8, l -> radioWave(l, p, c, staffTip, wave)));
         }
         return true;
+    }
+
+    private static void radioWave(ServerLevel level, Player p, Vec3 c, Vec3 staffTip, int wave) {
+        RandomSource rnd = level.getRandom();
+        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, c, 21f, 24, 16, 0f);
+        level.sendParticles(ParticleTypes.SONIC_BOOM, c.x, c.y + 1, c.z, 1, 0, 0, 0, 0);
+        level.playSound(null, c.x, c.y, c.z, SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 1.5f, 0.8f + wave * 0.2f);
+
+        // strike points: enemies first, then fill every direction
+        java.util.List<Vec3> strikes = new java.util.ArrayList<>();
+        AABB box = new AABB(c.x - 20, c.y - 3, c.z - 20, c.x + 20, c.y + 6, c.z + 20);
+        for (LivingEntity t : level.getEntitiesOfClass(LivingEntity.class, box, e -> Targeting.isValid(p, e))) {
+            if (strikes.size() >= 8) break;
+            strikes.add(new Vec3(t.getX(), Targeting.groundY(level, t.getX(), t.getY(), t.getZ()), t.getZ()));
+        }
+        int n = 16;
+        for (int k = 0; k < n; k++) {
+            double a = k * Math.PI * 2 / n + wave * 0.4 + rnd.nextDouble() * 0.3;
+            double r = 5 + rnd.nextDouble() * 15;
+            double x = c.x + Math.cos(a) * r, z = c.z + Math.sin(a) * r;
+            strikes.add(new Vec3(x, Targeting.groundY(level, x, c.y, z), z));
+        }
+        for (Vec3 s : strikes) {
+            ShadowFxEntity.bolt(level, staffTip, s.add(0, 0.2, 0), rnd.nextFloat() < 0.18f, 7 + rnd.nextInt(4));
+            // green light bursting up from the ground where the bolt lands
+            ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, s, 0.7f + rnd.nextFloat() * 0.4f, 18, 4, 0f);
+            ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, s, 1.6f, 18, 3, 0f);
+            level.sendParticles(ShadowFx.GREEN, s.x, s.y + 0.5, s.z, 12, 0.5, 1.0, 0.5, 0);
+            for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class,
+                    new AABB(s.x - 2.5, s.y - 1, s.z - 2.5, s.x + 2.5, s.y + 4, s.z + 2.5), x -> Targeting.isValid(p, x))) {
+                e.invulnerableTime = 0;
+                Targeting.hurt(p, e, 6f);
+                Targeting.launch(e, e.getDeltaMovement().add(0, 0.8, 0));
+            }
+        }
     }
 
     // ---- 4. Shadow Fracture: a 15-block glowing rift that swallows, drags and erupts.
@@ -143,9 +159,10 @@ public final class Skills {
         Vec3 dir = Targeting.horizontalLook(p);
         double gy = Targeting.groundY(level, p.getX(), p.getY(), p.getZ());
         Vec3 origin = new Vec3(p.getX(), gy, p.getZ()).add(dir);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, new Vec3(p.getX(), gy, p.getZ()), 2.8f, 40, 4, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, new Vec3(p.getX(), gy, p.getZ()), 5.6f, 40, 4, 0f);
+        ShadowFx.crackle(level, new Vec3(p.getX(), gy, p.getZ()), 4, 4);
         float yaw = (float) Math.toDegrees(Math.atan2(-dir.x, dir.z));
-        ShadowFxEntity.spawn(level, ShadowFxEntity.RIFT, origin, 15f, 40, 15, yaw);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.RIFT, origin, (float) FractureTask.LENGTH, FractureTask.LENGTH + 36, FractureTask.LENGTH, yaw);
         level.sendParticles(ParticleTypes.SQUID_INK, origin.x, gy + 0.2, origin.z, 30, 0.6, 0.1, 0.6, 0.1);
         level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.WARDEN_DIG, SoundSource.PLAYERS, 1.5f, 0.6f);
         level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.PLAYERS, 1.0f, 1.2f);
@@ -156,12 +173,13 @@ public final class Skills {
     // ---- 5. Shadow Domain: circular shadow field, 15 blocks across, that pins everything inside.
     private static boolean shadowDomain(ServerLevel level, Player p) {
         Vec3 c = groundAt(level, p);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.DOMAIN, c, 7.5f, 200, 14, 0f);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, c, 1.6f, 30, 6, 0f);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, c, 8f, 16, 12, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.DOMAIN, c, 15f, 200, 16, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, c, 2.4f, 36, 6, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, c, 16f, 18, 14, 0f);
+        ShadowFx.crackle(level, c, 12, 8);
         level.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_EMERGE, SoundSource.PLAYERS, 1.5f, 0.8f);
         level.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_SONIC_BOOM, SoundSource.PLAYERS, 1.0f, 0.5f);
-        level.sendParticles(ParticleTypes.SQUID_INK, c.x, c.y + 0.3, c.z, 120, 5, 0.1, 5, 0.08);
+        level.sendParticles(ParticleTypes.SQUID_INK, c.x, c.y + 0.3, c.z, 200, 10, 0.1, 10, 0.08);
         SkillTaskManager.add(level, new DomainTask(p, c));
         return true;
     }

@@ -14,6 +14,9 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+
+import java.util.Random;
 
 /** Glowing effect models: voodoo sigil, expanding wave, shadow rift, circular domain and light pillar. */
 public class ShadowFxRenderer extends EntityRenderer<ShadowFxEntity> {
@@ -80,7 +83,7 @@ public class ShadowFxRenderer extends EntityRenderer<ShadowFxEntity> {
                 VertexConsumer vc = buffers.getBuffer(RenderType.entityTranslucent(RIFT));
                 for (float z = 0; z < length; z += 1f) {
                     float z1 = Math.min(length, z + 1f);
-                    float w = 1.7f + 0.25f * (float) Math.sin(z * 1.3f + age * 0.3f);
+                    float w = 3.2f + 0.4f * (float) Math.sin(z * 1.3f + age * 0.3f);
                     float wobble = (float) Math.sin(z * 1.9f) * 0.25f;
                     quad(ps, vc, -w + wobble, z, w + wobble, z1, 0, 0, 1, z1 - z, alpha);
                 }
@@ -88,7 +91,7 @@ public class ShadowFxRenderer extends EntityRenderer<ShadowFxEntity> {
                 VertexConsumer beam = buffers.getBuffer(RenderType.entityTranslucent(PILLAR));
                 for (float z = 0; z < length; z += 1f) {
                     float z1 = Math.min(length, z + 1f);
-                    float h = 1.2f + 0.6f * (float) Math.sin(z * 2.1f + age * 0.4f);
+                    float h = 2.0f + 1.0f * (float) Math.sin(z * 2.1f + age * 0.4f);
                     wall(ps, beam, (float) Math.sin(z * 1.9f) * 0.25f, z, z1, h, alpha * 0.8f);
                 }
             }
@@ -107,12 +110,19 @@ public class ShadowFxRenderer extends EntityRenderer<ShadowFxEntity> {
                 cylinder(ps, buffers.getBuffer(RenderType.entityTranslucent(PILLAR)), r, 2.5f * ease, alpha * 0.55f * pulse, age * 0.01f);
             }
             case ShadowFxEntity.PILLAR -> {
-                float h = 18f * ease;
-                float r = size * (1.2f - 0.4f * growth);
+                float h = (12f + size * 7f) * ease;
+                float r = size * (1.25f - 0.35f * growth) * pulse;
                 VertexConsumer vc = buffers.getBuffer(RenderType.entityTranslucent(PILLAR));
+                cylinder(ps, vc, r * 1.6f, h * 0.7f, alpha * 0.45f, age * 0.05f);
                 cylinder(ps, vc, r, h, alpha, age * 0.08f);
                 cylinder(ps, vc, r * 0.45f, h * 1.1f, alpha, -age * 0.12f);
                 flat(ps, buffers.getBuffer(RenderType.entityTranslucent(POOL)), r * 3f, alpha * pulse);
+            }
+            case ShadowFxEntity.BOLT -> {
+                Random rnd = new Random(e.getId() * 341873128712L + (long) (age / 2));
+                float flicker = alpha * (0.65f + 0.35f * rnd.nextFloat());
+                VertexConsumer vc = buffers.getBuffer(RenderType.lightning());
+                bolt(ps.last().pose(), vc, new Vector3f(), new Vector3f(e.ex(), e.ey(), e.ez()), rnd, 0, e.red(), flicker);
             }
             default -> {}
         }
@@ -121,6 +131,62 @@ public class ShadowFxRenderer extends EntityRenderer<ShadowFxEntity> {
     }
 
     // ---------------- geometry helpers ----------------
+
+    /** Jagged lightning: glowing outer band + bright core, with a few side branches. */
+    private static void bolt(Matrix4f m, VertexConsumer vc, Vector3f a, Vector3f b, Random rnd, int depth, boolean red, float alpha) {
+        Vector3f d = new Vector3f(b).sub(a);
+        float len = d.length();
+        if (len < 0.05f) return;
+        Vector3f dir = new Vector3f(d).div(len);
+        Vector3f p1 = new Vector3f(dir).cross(0, 1, 0);
+        if (p1.lengthSquared() < 1.0E-4f) p1.set(1, 0, 0);
+        p1.normalize();
+        Vector3f p2 = new Vector3f(dir).cross(p1).normalize();
+        int n = Math.max(3, (int) (len / 0.7f));
+        float jag = Math.min(1.2f, len * 0.09f);
+        Vector3f prev = new Vector3f(a);
+        float wGlow = (depth == 0 ? 0.32f : 0.18f), wCore = (depth == 0 ? 0.08f : 0.05f);
+        for (int i = 1; i <= n; i++) {
+            Vector3f next = new Vector3f(dir).mul(len * i / n).add(a);
+            if (i < n) {
+                next.add(new Vector3f(p1).mul((rnd.nextFloat() - 0.5f) * 2 * jag))
+                    .add(new Vector3f(p2).mul((rnd.nextFloat() - 0.5f) * 2 * jag));
+            }
+            if (red) {
+                segment(m, vc, prev, next, wGlow, 1.0f, 0.15f, 0.1f, alpha * 0.55f);
+                segment(m, vc, prev, next, wCore, 1.0f, 0.75f, 0.7f, alpha);
+            } else {
+                segment(m, vc, prev, next, wGlow, 0.2f, 1.0f, 0.4f, alpha * 0.55f);
+                segment(m, vc, prev, next, wCore, 0.8f, 1.0f, 0.85f, alpha);
+            }
+            if (depth == 0 && i < n && rnd.nextFloat() < 0.28f) {
+                Vector3f branchEnd = new Vector3f(next)
+                        .add(new Vector3f(dir).mul(len * 0.15f))
+                        .add(new Vector3f(p1).mul((rnd.nextFloat() - 0.5f) * len * 0.5f))
+                        .add(new Vector3f(p2).mul((rnd.nextFloat() - 0.5f) * len * 0.5f));
+                bolt(m, vc, next, branchEnd, rnd, 1, red, alpha * 0.8f);
+            }
+            prev = next;
+        }
+    }
+
+    /** One bolt segment as two crossed, double-sided quads. */
+    private static void segment(Matrix4f m, VertexConsumer vc, Vector3f a, Vector3f b, float w,
+                                float r, float g, float bl, float alpha) {
+        Vector3f d = new Vector3f(b).sub(a);
+        if (d.lengthSquared() < 1.0E-6f) return;
+        d.normalize();
+        Vector3f q1 = new Vector3f(d).cross(0, 1, 0);
+        if (q1.lengthSquared() < 1.0E-4f) q1.set(1, 0, 0);
+        q1.normalize().mul(w);
+        Vector3f q2 = new Vector3f(d).cross(q1).normalize().mul(w);
+        for (Vector3f q : new Vector3f[]{q1, q2}) {
+            Vector3f a0 = new Vector3f(a).add(q), a1 = new Vector3f(a).sub(q);
+            Vector3f b0 = new Vector3f(b).add(q), b1 = new Vector3f(b).sub(q);
+            Vector3f[] quad = {a0, a1, b1, b0, b0, b1, a1, a0}; // front + back
+            for (Vector3f v : quad) vc.vertex(m, v.x, v.y, v.z).color(r, g, bl, alpha).endVertex();
+        }
+    }
 
     private static void flat(PoseStack ps, VertexConsumer vc, float r, float alpha) {
         quad(ps, vc, -r, -r, r, r, 0, 0, 1, 1, alpha);

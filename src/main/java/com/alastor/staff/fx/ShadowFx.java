@@ -2,7 +2,9 @@ package com.alastor.staff.fx;
 
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
+import com.alastor.staff.entity.ShadowFxEntity;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
@@ -65,6 +67,22 @@ public final class ShadowFx {
             line(level, g, end, GREEN_SMALL, 0.35);
             ring(level, end, 0.3, 6, GREEN_SMALL, 0);
         }
+    }
+
+    /** Small green (sometimes red) lightning crackling up from the ground around {@code c}. */
+    public static void crackle(ServerLevel level, Vec3 c, double radius, int count) {
+        RandomSource rnd = level.getRandom();
+        for (int i = 0; i < count; i++) {
+            double a = rnd.nextDouble() * Math.PI * 2, r = Math.sqrt(rnd.nextDouble()) * radius;
+            Vec3 from = c.add(Math.cos(a) * r, 0.1, Math.sin(a) * r);
+            Vec3 to = from.add((rnd.nextDouble() - 0.5) * 3, 1.5 + rnd.nextDouble() * 3, (rnd.nextDouble() - 0.5) * 3);
+            ShadowFxEntity.bolt(level, from, to, rnd.nextFloat() < 0.25f, 5 + rnd.nextInt(5));
+        }
+    }
+
+    /** A lightning bolt between two points; 20% chance to be red. */
+    public static void zap(ServerLevel level, Vec3 from, Vec3 to, int life) {
+        ShadowFxEntity.bolt(level, from, to, level.getRandom().nextFloat() < 0.2f, life);
     }
 
     private ShadowFx() {}

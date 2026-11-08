@@ -16,9 +16,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,12 +25,11 @@ import java.util.UUID;
  * are grabbed, lifted and thrown away; incoming projectiles are caught and hurled back.
  */
 public final class RadioDemonAura {
-    public static final double HALF = 3.5; // 7x7 blocks
+    public static final double HALF = 7.0; // 14x14 blocks
     private static final int REGRAB_DELAY = 40;
 
     private static final Map<UUID, Long> GRAB_COOLDOWN = new HashMap<>();
     private static final Map<UUID, Long> LAST_TICK = new HashMap<>();
-    private static final Map<UUID, List<TentacleEntity>> GUARDIANS = new HashMap<>();
 
     public static void tick(ServerLevel level, Player p) {
         long now = level.getGameTime();
@@ -42,10 +39,10 @@ public final class RadioDemonAura {
         Vec3 c = p.position();
         if (now % 4 == 0) {
             double rot = now * 0.05;
-            ShadowFx.ring(level, c.add(0, 0.1, 0), HALF, 28, ShadowFx.GREEN_SMALL, rot);
-            ShadowFx.ring(level, c.add(0, 0.15, 0), HALF - 0.4, 18, ShadowFx.BLACK_SMALL, -rot);
+            ShadowFx.ring(level, c.add(0, 0.1, 0), HALF, 48, ShadowFx.GREEN_SMALL, rot);
+            ShadowFx.ring(level, c.add(0, 0.15, 0), HALF - 0.5, 32, ShadowFx.BLACK_SMALL, -rot);
         }
-        guardians(level, p, now);
+        if (now % 12 == 0) ShadowFx.crackle(level, c, HALF, 2);
 
         // Projectiles: catch anything flying toward us that isn't ours and throw it back.
         AABB projBox = p.getBoundingBox().inflate(HALF + 2.0);
@@ -72,6 +69,7 @@ public final class RadioDemonAura {
 
             Vec3 root = new Vec3(proj.getX(), c.y, proj.getZ());
             TentacleEntity.spawn(level, root, proj.position().subtract(root), 10, 2, 0.7f);
+            ShadowFx.zap(level, p.position().add(0, 1.2, 0), proj.position(), 5);
             level.sendParticles(ShadowFx.GREEN, proj.getX(), proj.getY(), proj.getZ(), 6, 0.2, 0.2, 0.2, 0);
             level.playSound(null, proj.getX(), proj.getY(), proj.getZ(), SoundEvents.WARDEN_ATTACK_IMPACT, SoundSource.PLAYERS, 0.7f, 1.5f);
         }
@@ -88,29 +86,6 @@ public final class RadioDemonAura {
         if (now % 200 == 0) {
             GRAB_COOLDOWN.values().removeIf(t -> t < now);
             LAST_TICK.values().removeIf(t -> t < now - 100);
-        }
-    }
-
-    /** Four tentacles that circle the caster for as long as Radio Demon is on. */
-    private static void guardians(ServerLevel level, Player p, long now) {
-        List<TentacleEntity> list = GUARDIANS.get(p.getUUID());
-        if (list == null || list.size() < 4 || list.stream().anyMatch(t -> t.isRemoved() || t.level() != level)) {
-            if (list != null) list.forEach(TentacleEntity::retract);
-            list = new ArrayList<>();
-            for (int k = 0; k < 4; k++) {
-                TentacleEntity t = TentacleEntity.spawn(level, p.position(), new Vec3(0, 3.5, 0), 20, 8, 0.9f);
-                if (t != null) list.add(t);
-            }
-            GUARDIANS.put(p.getUUID(), list);
-            level.sendParticles(ShadowFx.GREEN, p.getX(), p.getY() + 0.5, p.getZ(), 40, 1.5, 0.3, 1.5, 0);
-        }
-        for (int k = 0; k < list.size(); k++) {
-            TentacleEntity t = list.get(k);
-            double a = now * 0.06 + k * Math.PI / 2;
-            double bob = Math.sin(now * 0.15 + k) * 0.6;
-            t.setPos(p.getX() + Math.cos(a) * 2.4, p.getY(), p.getZ() + Math.sin(a) * 2.4);
-            t.setTip(new Vec3(Math.cos(a) * 0.9, 3.4 + bob, Math.sin(a) * 0.9));
-            t.keepAlive(6);
         }
     }
 

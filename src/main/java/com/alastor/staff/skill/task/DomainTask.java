@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** Shadow Domain: a circular field of shadow (15 blocks across); anything inside is pinned by tentacles. */
+/** Shadow Domain: a circular field of shadow (30 blocks across); anything inside is pinned by tentacles. */
 public class DomainTask implements SkillTask {
-    private static final double HALF = 7.5;     // radius: 15 blocks across
+    private static final double HALF = 15.0;    // radius: 30 blocks across
     private static final int DURATION = 200;    // 10 seconds
 
     private final Player owner;
@@ -45,18 +45,9 @@ public class DomainTask implements SkillTask {
         age++;
         RandomSource rnd = level.getRandom();
 
-        if (age <= 24 && age % 2 == 1) {
-            // a wall of tall tentacles rises around the edge, one after another
-            int k = (age - 1) / 2;
-            double a = k * Math.PI * 2 / 12;
-            Vec3 root = new Vec3(center.x + Math.cos(a) * HALF, center.y, center.z + Math.sin(a) * HALF);
-            Vec3 tip = new Vec3(-Math.cos(a) * 1.5, 8 + (k % 3) * 1.5, -Math.sin(a) * 1.5);
-            TentacleEntity.spawn(level, root, tip, DURATION - age + TentacleEntity.FALL_TICKS, 8, 1.3f);
-            level.sendParticles(ShadowFx.GREEN, root.x, root.y + 0.3, root.z, 12, 0.4, 0.3, 0.4, 0);
-        }
         if (age % 2 == 0) {
-            ShadowFx.ring(level, center.add(0, 0.2, 0), HALF, 40, ShadowFx.BLACK, age * 0.03);
-            for (int i = 0; i < 10; i++) {
+            ShadowFx.ring(level, center.add(0, 0.2, 0), HALF, 80, ShadowFx.BLACK, age * 0.03);
+            for (int i = 0; i < 20; i++) {
                 double ra = rnd.nextDouble() * Math.PI * 2, rr = Math.sqrt(rnd.nextDouble()) * HALF;
                 double x = center.x + Math.cos(ra) * rr;
                 double z = center.z + Math.sin(ra) * rr;
@@ -64,6 +55,7 @@ public class DomainTask implements SkillTask {
             }
             level.sendParticles(ParticleTypes.SCULK_SOUL, center.x, center.y + 0.2, center.z, 2, HALF * 0.6, 0.1, HALF * 0.6, 0.01);
         }
+        if (age % 8 == 0) ShadowFx.crackle(level, center, HALF, 2);
         if (age % 40 == 1) {
             level.playSound(null, center.x, center.y, center.z, SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 1.5f, 0.6f);
         }

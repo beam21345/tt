@@ -36,7 +36,7 @@ public class SummonTask implements SkillTask {
     public boolean tick(ServerLevel level) {
         age++;
         if (age == 1) {
-            ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, at, 2.6f, 50, 8, 0f);
+            ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, at, 5.0f, 50, 8, 0f);
             ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, at, 0.9f, 32, 10, 0f);
             for (int k = 0; k < 4; k++) {
                 double a = k * Math.PI / 2;
@@ -55,6 +55,8 @@ public class SummonTask implements SkillTask {
         }
         level.sendParticles(ShadowFx.BLACK, at.x, at.y + 1, at.z, 6, 0.5, 1.0, 0.5, 0);
         if (age % 2 == 0) level.sendParticles(ParticleTypes.SCULK_SOUL, at.x, at.y + 0.3, at.z, 2, 0.8, 0.1, 0.8, 0.05);
+        if (age % 4 == 0) ShadowFx.zap(level, at.add(0, 6 + owner.getRandom().nextDouble() * 4, 0),
+                at.add((owner.getRandom().nextDouble() - 0.5) * 6, 0, (owner.getRandom().nextDouble() - 0.5) * 6), 6);
 
         if (age == EMERGE) {
             for (TentacleEntity t : coil) {
@@ -69,7 +71,8 @@ public class SummonTask implements SkillTask {
                 demon.setLifeTicks(ShadowDemonEntity.DEFAULT_LIFE);
                 level.addFreshEntity(demon);
             }
-            ShadowFxEntity.spawn(level, ShadowFxEntity.RING, at, 4f, 14, 8, 0f);
+            ShadowFxEntity.spawn(level, ShadowFxEntity.RING, at, 8f, 14, 8, 0f);
+            ShadowFx.crackle(level, at, 4, 4);
             level.sendParticles(ParticleTypes.SQUID_INK, at.x, at.y + 1, at.z, 40, 0.6, 1.0, 0.6, 0.12);
             level.sendParticles(ShadowFx.GREEN, at.x, at.y + 1.6, at.z, 30, 0.6, 0.8, 0.6, 0);
             level.sendParticles(ParticleTypes.SONIC_BOOM, at.x, at.y + 1, at.z, 1, 0, 0, 0, 0);

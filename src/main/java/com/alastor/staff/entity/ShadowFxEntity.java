@@ -20,13 +20,17 @@ import net.minecraft.world.phys.Vec3;
  * SIGIL (voodoo circle), RING (expanding wave), RIFT (shadow crack), DOMAIN (shadow circle), PILLAR (light beam).
  */
 public class ShadowFxEntity extends Entity {
-    public static final int SIGIL = 0, RING = 1, RIFT = 2, DOMAIN = 3, PILLAR = 4;
+    public static final int SIGIL = 0, RING = 1, RIFT = 2, DOMAIN = 3, PILLAR = 4, BOLT = 5;
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> SIZE = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> LIFE = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> GROW = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> YAW = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> EX = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> EY = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> EZ = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Boolean> RED = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.BOOLEAN);
 
     public ShadowFxEntity(EntityType<? extends ShadowFxEntity> type, Level level) {
         super(type, level);
@@ -51,8 +55,28 @@ public class ShadowFxEntity extends Entity {
         return e;
     }
 
+    /** A crackling lightning bolt from {@code from} to {@code to}, green or red. */
+    public static ShadowFxEntity bolt(ServerLevel level, Vec3 from, Vec3 to, boolean red, int life) {
+        ShadowFxEntity e = ModEntities.SHADOW_FX.get().create(level);
+        if (e == null) return null;
+        e.setPos(from.x, from.y, from.z);
+        e.entityData.set(VARIANT, BOLT);
+        e.entityData.set(LIFE, life);
+        e.entityData.set(GROW, 2);
+        e.entityData.set(EX, (float) (to.x - from.x));
+        e.entityData.set(EY, (float) (to.y - from.y));
+        e.entityData.set(EZ, (float) (to.z - from.z));
+        e.entityData.set(RED, red);
+        level.addFreshEntity(e);
+        return e;
+    }
+
     @Override
     protected void defineSynchedData() {
+        this.entityData.define(EX, 0f);
+        this.entityData.define(EY, 0f);
+        this.entityData.define(EZ, 0f);
+        this.entityData.define(RED, false);
         this.entityData.define(VARIANT, SIGIL);
         this.entityData.define(SIZE, 2f);
         this.entityData.define(LIFE, 20);
@@ -65,6 +89,10 @@ public class ShadowFxEntity extends Entity {
     public int life() { return entityData.get(LIFE); }
     public int grow() { return entityData.get(GROW); }
     public float yawDeg() { return entityData.get(YAW); }
+    public float ex() { return entityData.get(EX); }
+    public float ey() { return entityData.get(EY); }
+    public float ez() { return entityData.get(EZ); }
+    public boolean red() { return entityData.get(RED); }
 
     @Override
     public void tick() {
@@ -74,7 +102,7 @@ public class ShadowFxEntity extends Entity {
 
     @Override
     public AABB getBoundingBoxForCulling() {
-        return getBoundingBox().inflate(size() + 2).expandTowards(0, 16, 0);
+        return getBoundingBox().inflate(size() + 2).expandTowards(0, 48, 0).expandTowards(ex(), ey(), ez());
     }
 
     @Override

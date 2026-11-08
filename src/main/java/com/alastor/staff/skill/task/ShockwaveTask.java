@@ -15,8 +15,8 @@ import java.util.UUID;
 
 /** Radio Sound: a black/green wave expanding outward over a 20x20 area. */
 public class ShockwaveTask implements SkillTask {
-    private static final double HALF = 10.0;   // 20x20 blocks
-    private static final int DURATION = 14;
+    private static final double HALF = 20.0;   // 40x40 blocks
+    private static final int DURATION = 20;
     private static final float DAMAGE = 12f;
 
     private final Player owner;
