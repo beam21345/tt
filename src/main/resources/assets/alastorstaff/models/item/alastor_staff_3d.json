@@ -10,68 +10,68 @@
  },
  "elements": [
   {
-   "name": "shaft",
+   "name": "butt_spike",
    "from": [
-    7.25,
-    -12,
-    7.25
+    7.5,
+    -16,
+    7.5
    ],
    "to": [
-    8.75,
-    22,
-    8.75
+    8.5,
+    -14,
+    8.5
    ],
    "faces": {
     "north": {
      "uv": [
+      8,
       0,
-      0,
-      4,
+      12,
       4
      ],
      "texture": "#staff"
     },
     "east": {
      "uv": [
+      8,
       0,
-      0,
-      4,
+      12,
       4
      ],
      "texture": "#staff"
     },
     "south": {
      "uv": [
+      8,
       0,
-      0,
-      4,
+      12,
       4
      ],
      "texture": "#staff"
     },
     "west": {
      "uv": [
+      8,
       0,
-      0,
-      4,
+      12,
       4
      ],
      "texture": "#staff"
     },
     "up": {
      "uv": [
+      8,
       0,
-      0,
-      4,
+      12,
       4
      ],
      "texture": "#staff"
     },
     "down": {
      "uv": [
+      8,
       0,
-      0,
-      4,
+      12,
       4
      ],
      "texture": "#staff"
@@ -82,12 +82,12 @@
    "name": "butt_cap",
    "from": [
     6.75,
-    -13,
+    -14,
     6.75
    ],
    "to": [
     9.25,
-    -10,
+    -11,
     9.25
    ],
    "faces": {
@@ -148,68 +148,137 @@
    }
   },
   {
-   "name": "butt_spike",
+   "name": "butt_glow",
    "from": [
-    7.5,
-    -16,
-    7.5
+    6.5,
+    -12.75,
+    6.5
    ],
    "to": [
-    8.5,
-    -13,
-    8.5
+    9.5,
+    -12.25,
+    9.5
    ],
    "faces": {
     "north": {
      "uv": [
-      8,
+      4,
       0,
-      12,
+      8,
       4
      ],
      "texture": "#staff"
     },
     "east": {
      "uv": [
-      8,
+      4,
       0,
-      12,
+      8,
       4
      ],
      "texture": "#staff"
     },
     "south": {
      "uv": [
-      8,
+      4,
       0,
-      12,
+      8,
       4
      ],
      "texture": "#staff"
     },
     "west": {
      "uv": [
-      8,
+      4,
       0,
-      12,
+      8,
       4
      ],
      "texture": "#staff"
     },
     "up": {
      "uv": [
-      8,
+      4,
       0,
-      12,
+      8,
       4
      ],
      "texture": "#staff"
     },
     "down": {
      "uv": [
-      8,
+      4,
       0,
-      12,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    }
+   }
+  },
+  {
+   "name": "shaft_low",
+   "from": [
+    7.25,
+    -11,
+    7.25
+   ],
+   "to": [
+    8.75,
+    -3,
+    8.75
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      4,
       4
      ],
      "texture": "#staff"
@@ -424,154 +493,706 @@
    }
   },
   {
-   "name": "rune_ring_1",
+   "name": "shaft_up",
    "from": [
-    6.9,
-    11,
-    6.9
+    7.25,
+    6,
+    7.25
    ],
    "to": [
-    9.1,
-    11.75,
-    9.1
-   ],
-   "faces": {
-    "north": {
-     "uv": [
-      4,
-      0,
-      8,
-      4
-     ],
-     "texture": "#staff"
-    },
-    "east": {
-     "uv": [
-      4,
-      0,
-      8,
-      4
-     ],
-     "texture": "#staff"
-    },
-    "south": {
-     "uv": [
-      4,
-      0,
-      8,
-      4
-     ],
-     "texture": "#staff"
-    },
-    "west": {
-     "uv": [
-      4,
-      0,
-      8,
-      4
-     ],
-     "texture": "#staff"
-    },
-    "up": {
-     "uv": [
-      4,
-      0,
-      8,
-      4
-     ],
-     "texture": "#staff"
-    },
-    "down": {
-     "uv": [
-      4,
-      0,
-      8,
-      4
-     ],
-     "texture": "#staff"
-    }
-   }
-  },
-  {
-   "name": "rune_ring_2",
-   "from": [
-    6.9,
-    16,
-    6.9
-   ],
-   "to": [
-    9.1,
-    16.75,
-    9.1
-   ],
-   "faces": {
-    "north": {
-     "uv": [
-      4,
-      0,
-      8,
-      4
-     ],
-     "texture": "#staff"
-    },
-    "east": {
-     "uv": [
-      4,
-      0,
-      8,
-      4
-     ],
-     "texture": "#staff"
-    },
-    "south": {
-     "uv": [
-      4,
-      0,
-      8,
-      4
-     ],
-     "texture": "#staff"
-    },
-    "west": {
-     "uv": [
-      4,
-      0,
-      8,
-      4
-     ],
-     "texture": "#staff"
-    },
-    "up": {
-     "uv": [
-      4,
-      0,
-      8,
-      4
-     ],
-     "texture": "#staff"
-    },
-    "down": {
-     "uv": [
-      4,
-      0,
-      8,
-      4
-     ],
-     "texture": "#staff"
-    }
-   }
-  },
-  {
-   "name": "collar",
-   "from": [
-    6.25,
+    8.75,
     21,
-    6.25
+    8.75
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ],
+     "texture": "#staff"
+    }
+   }
+  },
+  {
+   "name": "rune_spiral_0",
+   "from": [
+    8.75,
+    8,
+    7.75
    ],
    "to": [
-    9.75,
+    9.25,
+    9,
+    8.25
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    }
+   }
+  },
+  {
+   "name": "rune_spiral_1",
+   "from": [
+    7.75,
+    10,
+    8.75
+   ],
+   "to": [
+    8.25,
+    11,
+    9.25
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    }
+   }
+  },
+  {
+   "name": "rune_spiral_2",
+   "from": [
+    6.75,
+    12,
+    7.75
+   ],
+   "to": [
+    7.25,
+    13,
+    8.25
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    }
+   }
+  },
+  {
+   "name": "rune_spiral_3",
+   "from": [
+    7.75,
+    14,
+    6.75
+   ],
+   "to": [
+    8.25,
+    15,
+    7.25
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    }
+   }
+  },
+  {
+   "name": "rune_spiral_4",
+   "from": [
+    8.75,
+    16,
+    7.75
+   ],
+   "to": [
+    9.25,
+    17,
+    8.25
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    }
+   }
+  },
+  {
+   "name": "rune_spiral_5",
+   "from": [
+    7.75,
+    18,
+    8.75
+   ],
+   "to": [
+    8.25,
+    19,
+    9.25
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    }
+   }
+  },
+  {
+   "name": "ring_a",
+   "from": [
+    6.9,
+    11.5,
+    6.9
+   ],
+   "to": [
+    9.1,
+    12,
+    9.1
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    }
+   }
+  },
+  {
+   "name": "ring_b",
+   "from": [
+    6.9,
+    16.5,
+    6.9
+   ],
+   "to": [
+    9.1,
+    17,
+    9.1
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    }
+   }
+  },
+  {
+   "name": "collar_1",
+   "from": [
+    6.5,
+    21,
+    6.5
+   ],
+   "to": [
+    9.5,
+    22,
+    9.5
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      8,
+      0,
+      12,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      8,
+      0,
+      12,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      8,
+      0,
+      12,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      8,
+      0,
+      12,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      8,
+      0,
+      12,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      8,
+      0,
+      12,
+      4
+     ],
+     "texture": "#staff"
+    }
+   }
+  },
+  {
+   "name": "collar_2",
+   "from": [
+    6,
+    22,
+    6
+   ],
+   "to": [
+    10,
     23.5,
-    9.75
+    10
    ],
    "faces": {
     "north": {
@@ -633,14 +1254,14 @@
   {
    "name": "collar_glow",
    "from": [
-    6.0,
-    22,
-    6.0
+    5.75,
+    22.5,
+    5.75
    ],
    "to": [
-    10.0,
-    22.5,
-    10.0
+    10.25,
+    23,
+    10.25
    ],
    "faces": {
     "north": {
@@ -702,83 +1323,161 @@
   {
    "name": "orb",
    "from": [
-    6,
+    5.5,
     24.5,
+    5.5
+   ],
+   "to": [
+    10.5,
+    29.5,
+    10.5
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      4,
+      0,
+      8,
+      4
+     ],
+     "texture": "#staff"
+    }
+   }
+  },
+  {
+   "name": "orb_facets",
+   "from": [
+    6,
+    25,
     6
    ],
    "to": [
     10,
-    28.5,
+    29,
     10
    ],
    "faces": {
     "north": {
      "uv": [
-      4,
       0,
-      8,
-      4
+      4,
+      4,
+      8
      ],
      "texture": "#staff"
     },
     "east": {
      "uv": [
-      4,
       0,
-      8,
-      4
+      4,
+      4,
+      8
      ],
      "texture": "#staff"
     },
     "south": {
      "uv": [
-      4,
       0,
-      8,
-      4
+      4,
+      4,
+      8
      ],
      "texture": "#staff"
     },
     "west": {
      "uv": [
-      4,
       0,
-      8,
-      4
+      4,
+      4,
+      8
      ],
      "texture": "#staff"
     },
     "up": {
      "uv": [
-      4,
       0,
-      8,
-      4
+      4,
+      4,
+      8
      ],
      "texture": "#staff"
     },
     "down": {
      "uv": [
-      4,
       0,
-      8,
-      4
+      4,
+      4,
+      8
      ],
      "texture": "#staff"
     }
+   },
+   "rotation": {
+    "angle": 45,
+    "axis": "y",
+    "origin": [
+     8,
+     27,
+     8
+    ]
    }
   },
   {
-   "name": "orb_band",
+   "name": "halo_n",
    "from": [
-    5.75,
-    26.25,
-    5.75
+    4,
+    26.75,
+    3.75
    ],
    "to": [
-    10.25,
-    26.75,
-    10.25
+    12,
+    27.25,
+    4.25
    ],
    "faces": {
     "north": {
@@ -835,17 +1534,260 @@
      ],
      "texture": "#staff"
     }
+   },
+   "rotation": {
+    "angle": 45,
+    "axis": "y",
+    "origin": [
+     8,
+     27,
+     8
+    ]
+   }
+  },
+  {
+   "name": "halo_s",
+   "from": [
+    4,
+    26.75,
+    11.75
+   ],
+   "to": [
+    12,
+    27.25,
+    12.25
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    }
+   },
+   "rotation": {
+    "angle": 45,
+    "axis": "y",
+    "origin": [
+     8,
+     27,
+     8
+    ]
+   }
+  },
+  {
+   "name": "halo_w",
+   "from": [
+    3.75,
+    26.75,
+    4
+   ],
+   "to": [
+    4.25,
+    27.25,
+    12
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    }
+   },
+   "rotation": {
+    "angle": 45,
+    "axis": "y",
+    "origin": [
+     8,
+     27,
+     8
+    ]
+   }
+  },
+  {
+   "name": "halo_e",
+   "from": [
+    11.75,
+    26.75,
+    4
+   ],
+   "to": [
+    12.25,
+    27.25,
+    12
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      0,
+      4,
+      4,
+      8
+     ],
+     "texture": "#staff"
+    }
+   },
+   "rotation": {
+    "angle": 45,
+    "axis": "y",
+    "origin": [
+     8,
+     27,
+     8
+    ]
    }
   },
   {
    "name": "claw_w_low",
    "from": [
-    5.25,
+    4.25,
     23.5,
     7.5
    ],
    "to": [
-    6.25,
+    5.25,
     27.5,
     8.5
    ],
@@ -909,7 +1851,7 @@
     "angle": 22.5,
     "axis": "z",
     "origin": [
-     5.75,
+     4.75,
      23.5,
      8
     ]
@@ -918,12 +1860,12 @@
   {
    "name": "claw_w_up",
    "from": [
-    3.72,
+    2.72,
     27.2,
     7.5
    ],
    "to": [
-    4.72,
+    3.72,
     30.7,
     8.5
    ],
@@ -987,7 +1929,7 @@
     "angle": -22.5,
     "axis": "z",
     "origin": [
-     4.22,
+     3.22,
      27.2,
      8
     ]
@@ -996,12 +1938,12 @@
   {
    "name": "claw_e_low",
    "from": [
-    9.75,
+    10.75,
     23.5,
     7.5
    ],
    "to": [
-    10.75,
+    11.75,
     27.5,
     8.5
    ],
@@ -1065,7 +2007,7 @@
     "angle": -22.5,
     "axis": "z",
     "origin": [
-     10.25,
+     11.25,
      23.5,
      8
     ]
@@ -1074,12 +2016,12 @@
   {
    "name": "claw_e_up",
    "from": [
-    11.28,
+    12.28,
     27.2,
     7.5
    ],
    "to": [
-    12.28,
+    13.28,
     30.7,
     8.5
    ],
@@ -1143,7 +2085,7 @@
     "angle": 22.5,
     "axis": "z",
     "origin": [
-     11.78,
+     12.78,
      27.2,
      8
     ]
@@ -1154,12 +2096,12 @@
    "from": [
     7.5,
     23.5,
-    5.25
+    4.25
    ],
    "to": [
     8.5,
     27.5,
-    6.25
+    5.25
    ],
    "faces": {
     "north": {
@@ -1223,7 +2165,7 @@
     "origin": [
      8,
      23.5,
-     5.75
+     4.75
     ]
    }
   },
@@ -1232,12 +2174,12 @@
    "from": [
     7.5,
     27.2,
-    3.72
+    2.72
    ],
    "to": [
     8.5,
     30.7,
-    4.72
+    3.72
    ],
    "faces": {
     "north": {
@@ -1301,7 +2243,7 @@
     "origin": [
      8,
      27.2,
-     4.22
+     3.22
     ]
    }
   },
@@ -1310,12 +2252,12 @@
    "from": [
     7.5,
     23.5,
-    9.75
+    10.75
    ],
    "to": [
     8.5,
     27.5,
-    10.75
+    11.75
    ],
    "faces": {
     "north": {
@@ -1379,7 +2321,7 @@
     "origin": [
      8,
      23.5,
-     10.25
+     11.25
     ]
    }
   },
@@ -1388,12 +2330,12 @@
    "from": [
     7.5,
     27.2,
-    11.28
+    12.28
    ],
    "to": [
     8.5,
     30.7,
-    12.28
+    13.28
    ],
    "faces": {
     "north": {
@@ -1457,7 +2399,7 @@
     "origin": [
      8,
      27.2,
-     11.78
+     12.78
     ]
    }
   },
@@ -1465,7 +2407,7 @@
    "name": "crown_spike",
    "from": [
     7.5,
-    28.5,
+    29.5,
     7.5
    ],
    "to": [
@@ -1600,7 +2542,7 @@
    }
   },
   {
-   "name": "charm_1",
+   "name": "charm_bead",
    "from": [
     9.6,
     13,
@@ -1738,16 +2680,16 @@
    }
   },
   {
-   "name": "charm_2",
+   "name": "charm_skull",
    "from": [
-    5.2,
+    4.9,
     14.5,
-    7.3
+    7
    ],
    "to": [
-    6.6,
+    6.9,
     17,
-    8.7
+    9
    ],
    "faces": {
     "north": {
@@ -1807,72 +2749,219 @@
    }
   },
   {
-   "name": "charm_2_eyes",
+   "name": "skull_jaw",
    "from": [
     5.15,
-    15.6,
-    7.6
+    13.75,
+    7.25
    ],
    "to": [
-    5.25,
-    16.1,
-    8.4
+    6.65,
+    14.5,
+    8.75
    ],
    "faces": {
     "north": {
      "uv": [
-      0,
       4,
       4,
+      8,
       8
      ],
      "texture": "#staff"
     },
     "east": {
      "uv": [
-      0,
       4,
       4,
+      8,
       8
      ],
      "texture": "#staff"
     },
     "south": {
      "uv": [
-      0,
       4,
       4,
+      8,
       8
      ],
      "texture": "#staff"
     },
     "west": {
      "uv": [
-      0,
       4,
       4,
+      8,
       8
      ],
      "texture": "#staff"
     },
     "up": {
      "uv": [
-      0,
       4,
       4,
+      8,
       8
      ],
      "texture": "#staff"
     },
     "down": {
      "uv": [
-      0,
       4,
       4,
+      8,
       8
      ],
      "texture": "#staff"
     }
+   }
+  },
+  {
+   "name": "cord_3",
+   "from": [
+    8.0,
+    12,
+    10.0
+   ],
+   "to": [
+    8.2,
+    21,
+    10.2
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      8,
+      0,
+      12,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      8,
+      0,
+      12,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      8,
+      0,
+      12,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      8,
+      0,
+      12,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      8,
+      0,
+      12,
+      4
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      8,
+      0,
+      12,
+      4
+     ],
+     "texture": "#staff"
+    }
+   }
+  },
+  {
+   "name": "feather",
+   "from": [
+    7.6,
+    7.5,
+    10.05
+   ],
+   "to": [
+    8.6,
+    12,
+    10.15
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      8,
+      4,
+      12,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "east": {
+     "uv": [
+      8,
+      4,
+      12,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "south": {
+     "uv": [
+      8,
+      4,
+      12,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "west": {
+     "uv": [
+      8,
+      4,
+      12,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "up": {
+     "uv": [
+      8,
+      4,
+      12,
+      8
+     ],
+     "texture": "#staff"
+    },
+    "down": {
+     "uv": [
+      8,
+      4,
+      12,
+      8
+     ],
+     "texture": "#staff"
+    }
+   },
+   "rotation": {
+    "angle": 22.5,
+    "axis": "x",
+    "origin": [
+     8.1,
+     12,
+     10.1
+    ]
    }
   }
  ],
