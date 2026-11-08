@@ -3,6 +3,11 @@ package com.alastor.staff.entity;
 import com.alastor.staff.fx.ShadowFx;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -34,6 +39,7 @@ import java.util.UUID;
  */
 public class ShadowDemonEntity extends PathfinderMob {
     public static final int DEFAULT_LIFE = 1200; // 60 seconds
+    private static final EntityDataAccessor<Float> DATA_SIZE = SynchedEntityData.defineId(ShadowDemonEntity.class, EntityDataSerializers.FLOAT);
 
     @Nullable private UUID ownerUUID;
     private int life = DEFAULT_LIFE;
@@ -41,6 +47,38 @@ public class ShadowDemonEntity extends PathfinderMob {
     public ShadowDemonEntity(EntityType<? extends ShadowDemonEntity> type, Level level) {
         super(type, level);
         this.xpReward = 0;
+    }
+
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(DATA_SIZE, 1.0f);
+    }
+
+    public float getDemonSize() { return this.entityData.get(DATA_SIZE); }
+
+    /** Sets the demon's size; bigger demons are tougher and hit harder but move slower. */
+    public void setDemonSize(float size) {
+        this.entityData.set(DATA_SIZE, size);
+        this.refreshDimensions();
+        if (this.getAttribute(Attributes.MAX_HEALTH) != null) {
+            this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(28.0 * size * size);
+            this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(5.0 * size + 2.0);
+            this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.42 - 0.06 * size);
+            this.getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(Math.min(1.0, 0.35 * size));
+            this.setHealth(this.getMaxHealth());
+        }
+    }
+
+    @Override
+    public EntityDimensions getDimensions(Pose pose) {
+        return super.getDimensions(pose).scale(getDemonSize());
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+        if (DATA_SIZE.equals(key)) this.refreshDimensions();
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -111,8 +149,9 @@ public class ShadowDemonEntity extends PathfinderMob {
                 this.discard();
                 return;
             }
-            if (tickCount % 3 == 0) sl.sendParticles(ShadowFx.BLACK, getX(), getY() + 1.0, getZ(), 2, 0.3, 0.6, 0.3, 0);
-            if (tickCount % 8 == 0) sl.sendParticles(ShadowFx.GREEN_SMALL, getX(), getY() + 1.7, getZ(), 2, 0.2, 0.1, 0.2, 0);
+            float sz = getDemonSize();
+            if (tickCount % 3 == 0) sl.sendParticles(ShadowFx.BLACK, getX(), getY() + 0.3, getZ(), 3, 0.35 * sz, 0.2, 0.35 * sz, 0);
+            if (tickCount % 6 == 0) sl.sendParticles(ParticleTypes.SQUID_INK, getX(), getY() + 0.1, getZ(), 1, 0.3 * sz, 0.0, 0.3 * sz, 0.01);
         }
     }
 
@@ -139,6 +178,7 @@ public class ShadowDemonEntity extends PathfinderMob {
         super.addAdditionalSaveData(tag);
         if (ownerUUID != null) tag.putUUID("Owner", ownerUUID);
         tag.putInt("Life", life);
+        tag.putFloat("DemonSize", getDemonSize());
     }
 
     @Override
@@ -146,6 +186,7 @@ public class ShadowDemonEntity extends PathfinderMob {
         super.readAdditionalSaveData(tag);
         if (tag.hasUUID("Owner")) ownerUUID = tag.getUUID("Owner");
         if (tag.contains("Life")) life = tag.getInt("Life");
+        if (tag.contains("DemonSize")) this.entityData.set(DATA_SIZE, tag.getFloat("DemonSize"));
     }
 
     /** Walks back to the summoner when idle; teleports if left far behind. */

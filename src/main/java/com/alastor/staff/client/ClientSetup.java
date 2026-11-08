@@ -13,6 +13,7 @@ public final class ClientSetup {
     @SubscribeEvent
     public static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(TentacleRenderer.LAYER, TentacleRenderer::createLayer);
+        event.registerLayerDefinition(ShadowDemonModel.LAYER, ShadowDemonModel::createLayer);
     }
 
     @SubscribeEvent

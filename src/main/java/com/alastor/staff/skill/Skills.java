@@ -88,12 +88,14 @@ public final class Skills {
         Vec3 c = groundAt(level, p);
         ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, c, 9f, 70, 10, 0f);
         ShadowFx.crackle(level, c, 8, 6);
+        float[] sizes = {0.75f, 1.15f, 1.7f}; // small, medium and large demon
         for (int i = 0; i < 3; i++) {
+            final float size = sizes[i];
             double a = Math.toRadians(p.getYRot() + 90 + i * 120);
             double x = p.getX() + Math.cos(a) * 5.0;
             double z = p.getZ() + Math.sin(a) * 5.0;
             Vec3 at = new Vec3(x, Targeting.groundY(level, x, p.getY(), z), z);
-            SkillTaskManager.add(level, new DelayedTask(i * 6, l -> SkillTaskManager.add(l, new SummonTask(p, at))));
+            SkillTaskManager.add(level, new DelayedTask(i * 6, l -> SkillTaskManager.add(l, new SummonTask(p, at, size))));
         }
         level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.PLAYERS, 1.2f, 0.6f);
         return true;

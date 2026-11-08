@@ -16,7 +16,7 @@ public final class ModEntities {
 
     public static final RegistryObject<EntityType<ShadowDemonEntity>> SHADOW_DEMON = ENTITIES.register("shadow_demon",
             () -> EntityType.Builder.<ShadowDemonEntity>of(ShadowDemonEntity::new, MobCategory.MISC)
-                    .sized(0.6f, 1.95f)
+                    .sized(0.7f, 2.4f)
                     .fireImmune()
                     .clientTrackingRange(10)
                     .build("shadow_demon"));

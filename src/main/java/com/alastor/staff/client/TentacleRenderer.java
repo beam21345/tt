@@ -24,17 +24,16 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /**
- * Draws a shadow tentacle as a chain of 3D segments. Each segment is a textured cube stretched
- * between two points of a swaying curve, thick at the root and thin at the tip, with glowing
- * green voodoo runes.
+ * Glossy pure-black shadow tentacle. Built from many short segments, each an octagonal prism
+ * (two cubes twisted 45°), following a curve with a wave travelling up the body and a curling tip.
+ * Only the ground under it glows green while it bursts out.
  */
 public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
     public static final ModelLayerLocation LAYER =
             new ModelLayerLocation(new ResourceLocation(AlastorStaffMod.MODID, "shadow_tentacle"), "main");
     private static final ResourceLocation TEX = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/tentacle.png");
-    private static final ResourceLocation GLOW = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/tentacle_glow.png");
     private static final ResourceLocation POOL = new ResourceLocation(AlastorStaffMod.MODID, "textures/fx/glow_pool.png");
-    private static final int SEGMENTS = 22;
+    private static final int SEGMENTS = 30;
 
     private final ModelPart segment;
     private final ModelPart tipPart;
@@ -49,10 +48,8 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
 
     public static LayerDefinition createLayer() {
         MeshDefinition mesh = new MeshDefinition();
-        // A 1x1x1 block cube standing on its base; scaled per segment at render time.
         mesh.getRoot().addOrReplaceChild("segment",
                 CubeListBuilder.create().texOffs(0, 0).addBox(-8f, 0f, -8f, 16f, 16f, 16f), PartPose.ZERO);
-        // Pointed tip: a smaller cube on top of a thin spike.
         mesh.getRoot().addOrReplaceChild("tip",
                 CubeListBuilder.create()
                         .texOffs(0, 32).addBox(-6f, 0f, -6f, 12f, 10f, 12f)
@@ -66,7 +63,7 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
         float ext = e.extension(age);
         if (ext <= 0.01f) return;
 
-        Vector3f tip = new Vector3f(e.tipX(), e.tipY(), e.tipZ());
+        Vector3f tip = new Vector3f(e.lerpTipX(partialTick), e.lerpTipY(partialTick), e.lerpTipZ(partialTick));
         float len = tip.length();
         if (len < 0.05f) return;
         Vector3f dir = new Vector3f(tip).div(len);
@@ -77,38 +74,25 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
 
         float phase = e.phase();
         float thick = e.thickness();
-        float amp = Math.min(1.6f, 0.14f * len);
+        float amp = Math.min(1.8f, 0.13f * len);
+        float curl = Math.min(2.2f, 0.16f * len);
+        float reach = len * ext;
 
+        // Centre line: a wave travels from root to tip, the last quarter curls over like a hook.
         Vector3f[] pts = new Vector3f[SEGMENTS + 1];
         for (int i = 0; i <= SEGMENTS; i++) {
             float s = (float) i / SEGMENTS;
-            float sway = (float) Math.sin(s * Math.PI * 1.8 + age * 0.13 + phase) * amp * s;
-            float sway2 = (float) Math.cos(s * Math.PI * 1.3 + age * 0.09 + phase * 1.7) * amp * 0.7f * s;
-            pts[i] = new Vector3f(dir).mul(len * s * ext)
-                    .add(new Vector3f(side).mul(sway))
-                    .add(new Vector3f(side2).mul(sway2));
+            float env = (float) Math.pow(s, 1.3);
+            float wave = (float) Math.sin(s * Math.PI * 2.0 - age * 0.22 + phase) * amp * env;
+            float wave2 = (float) Math.cos(s * Math.PI * 1.4 - age * 0.15 + phase * 1.7) * amp * 0.6f * env;
+            float hook = s > 0.7f ? (float) Math.pow((s - 0.7f) / 0.3f, 2) : 0f;
+            float curlNow = curl * hook * (0.75f + 0.25f * (float) Math.sin(age * 0.12 + phase));
+            pts[i] = new Vector3f(dir).mul(reach * s - curlNow * 0.35f * hook)
+                    .add(new Vector3f(side).mul(wave + curlNow))
+                    .add(new Vector3f(side2).mul(wave2));
         }
 
-        // Pure black body.
-        drawPass(ps, buffers.getBuffer(RenderType.entityCutoutNoCull(TEX)), pts, thick, age, light, 1f, 1f, 0f);
-
-        // Green summoning light: a slightly larger glowing shell + a glowing pool on the ground, fading out.
-        float glow = e.glow(age);
-        if (glow > 0.01f) {
-            drawPass(ps, buffers.getBuffer(RenderType.eyes(GLOW)), pts, thick, age, LightTexture.FULL_BRIGHT, 1.18f, glow, 1f);
-            float r = 1.0f + thick * 1.6f;
-            groundPool(ps, buffers.getBuffer(RenderType.entityTranslucent(POOL)), r, glow);
-        }
-        super.render(e, entityYaw, partialTick, ps, buffers, light);
-    }
-
-    /**
-     * @param inflate  width multiplier (glow shell is drawn a bit wider than the body)
-     * @param glow     colour strength for the glow pass (additive: lower = dimmer)
-     * @param baseBias how much brighter the glow is near the root (0 = uniform)
-     */
-    private void drawPass(PoseStack ps, VertexConsumer vc, Vector3f[] pts, float thick, float age, int light,
-                          float inflate, float glow, float baseBias) {
+        VertexConsumer vc = buffers.getBuffer(RenderType.entityCutoutNoCull(TEX));
         for (int i = 0; i < SEGMENTS; i++) {
             Vector3f a = pts[i];
             Vector3f d = new Vector3f(pts[i + 1]).sub(a);
@@ -116,24 +100,35 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
             if (segLen < 1.0E-4f) continue;
             d.div(segLen);
             float s = (float) i / SEGMENTS;
-            // thick root, long taper, with gentle muscular bulges along the length
-            float bulge = 1.0f + 0.12f * (float) Math.sin(i * 1.3f - age * 0.35f);
-            float w = thick * (1.0f - 0.78f * s) * bulge * inflate;
-            float c = glow * (1.0f - baseBias * 0.65f * s);
+            // thick muscular root, long elegant taper, a slow pulse running up the body
+            float taper = 1.0f - 0.82f * (float) Math.pow(s, 0.85);
+            float pulse = 1.0f + 0.08f * (float) Math.sin(i * 0.9f - age * 0.4f);
+            float w = thick * taper * pulse;
 
             ps.pushPose();
             ps.translate(a.x, a.y, a.z);
             ps.mulPose(new Quaternionf().rotationTo(0f, 1f, 0f, d.x, d.y, d.z));
-            ps.mulPose(Axis.YP.rotation(age * 0.04f + i * 0.5f));
             if (i == SEGMENTS - 1) {
-                ps.scale(w * 1.3f, segLen * 1.6f, w * 1.3f);
-                tipPart.render(ps, vc, light, OverlayTexture.NO_OVERLAY, c, c, c, 1f);
+                ps.scale(w * 1.15f, segLen * 1.7f, w * 1.15f);
+                tipPart.render(ps, vc, light, OverlayTexture.NO_OVERLAY);
+                ps.mulPose(Axis.YP.rotationDegrees(45f));
+                tipPart.render(ps, vc, light, OverlayTexture.NO_OVERLAY);
             } else {
-                ps.scale(w, segLen * 1.12f, w);
-                segment.render(ps, vc, light, OverlayTexture.NO_OVERLAY, c, c, c, 1f);
+                ps.scale(w, segLen * 1.15f, w);
+                segment.render(ps, vc, light, OverlayTexture.NO_OVERLAY);
+                ps.mulPose(Axis.YP.rotationDegrees(45f)); // second cube twisted 45° = rounded octagon
+                segment.render(ps, vc, light, OverlayTexture.NO_OVERLAY);
             }
             ps.popPose();
         }
+
+        // green light on the ground only while it bursts out
+        float glow = e.glow(age);
+        if (glow > 0.01f) {
+            float r = 1.2f + thick * 1.8f;
+            groundPool(ps, buffers.getBuffer(RenderType.entityTranslucent(POOL)), r, glow);
+        }
+        super.render(e, entityYaw, partialTick, ps, buffers, light);
     }
 
     private static void groundPool(PoseStack ps, VertexConsumer vc, float r, float alpha) {

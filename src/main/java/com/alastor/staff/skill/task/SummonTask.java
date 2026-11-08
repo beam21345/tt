@@ -27,9 +27,12 @@ public class SummonTask implements SkillTask {
     private final List<TentacleEntity> coil = new ArrayList<>();
     private int age;
 
-    public SummonTask(Player owner, Vec3 at) {
+    private final float demonSize;
+
+    public SummonTask(Player owner, Vec3 at, float demonSize) {
         this.owner = owner;
         this.at = at;
+        this.demonSize = demonSize;
     }
 
     @Override
@@ -69,6 +72,7 @@ public class SummonTask implements SkillTask {
                 demon.moveTo(at.x, at.y, at.z, owner.getYRot(), 0);
                 demon.setOwner(owner);
                 demon.setLifeTicks(ShadowDemonEntity.DEFAULT_LIFE);
+                demon.setDemonSize(demonSize);
                 level.addFreshEntity(demon);
             }
             ShadowFxEntity.spawn(level, ShadowFxEntity.RING, at, 8f, 14, 8, 0f);

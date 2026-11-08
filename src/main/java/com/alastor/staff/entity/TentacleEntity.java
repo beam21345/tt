@@ -28,7 +28,11 @@ public class TentacleEntity extends Entity {
     private static final EntityDataAccessor<Integer> LIFE = SynchedEntityData.defineId(TentacleEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> RISE = SynchedEntityData.defineId(TentacleEntity.class, EntityDataSerializers.INT);
 
-    public static final int FALL_TICKS = 6;
+    public static final int FALL_TICKS = 7;
+
+    // client-side smoothing of the tip between server updates
+    private float prevTipX, prevTipY, prevTipZ, curTipX, curTipY, curTipZ;
+    private boolean tipInit;
 
     public TentacleEntity(EntityType<? extends TentacleEntity> type, Level level) {
         super(type, level);
@@ -90,14 +94,25 @@ public class TentacleEntity extends Entity {
     public float phase() { return entityData.get(PHASE); }
     public int getLife() { return entityData.get(LIFE); }
 
-    /** 0..1 how far the tentacle is out of the ground at the given (partial) age. */
+    /** 0..1+ how far the tentacle is out of the ground: springs up with a slight overshoot, eases back down. */
     public float extension(float age) {
         int rise = entityData.get(RISE);
-        if (age < rise) return age / rise;
+        if (age < rise) {
+            float t = age / rise - 1f;
+            return 1f + 2.70158f * t * t * t + 1.70158f * t * t; // ease-out-back
+        }
         float remaining = getLife() - age;
-        if (remaining < FALL_TICKS) return Math.max(0f, remaining / FALL_TICKS);
+        if (remaining < FALL_TICKS) {
+            float t = Math.max(0f, remaining / FALL_TICKS);
+            return t * t * (3f - 2f * t); // smoothstep
+        }
         return 1f;
     }
+
+    /** Tip position smoothly interpolated between server ticks (client side). */
+    public float lerpTipX(float pt) { return tipInit ? prevTipX + (curTipX - prevTipX) * pt : tipX(); }
+    public float lerpTipY(float pt) { return tipInit ? prevTipY + (curTipY - prevTipY) * pt : tipY(); }
+    public float lerpTipZ(float pt) { return tipInit ? prevTipZ + (curTipZ - prevTipZ) * pt : tipZ(); }
 
     /** 0..1 strength of the green summoning light: full while emerging, then fades to pure black. */
     public float glow(float age) {
@@ -109,6 +124,17 @@ public class TentacleEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
+        if (level().isClientSide) {
+            if (!tipInit) {
+                curTipX = tipX(); curTipY = tipY(); curTipZ = tipZ();
+                tipInit = true;
+            }
+            prevTipX = curTipX; prevTipY = curTipY; prevTipZ = curTipZ;
+            // ease toward the synced tip so motion stays fluid
+            curTipX += (tipX() - curTipX) * 0.6f;
+            curTipY += (tipY() - curTipY) * 0.6f;
+            curTipZ += (tipZ() - curTipZ) * 0.6f;
+        }
         if (!level().isClientSide && this.tickCount == 1 && level() instanceof net.minecraft.server.level.ServerLevel sl) {
             sl.sendParticles(com.alastor.staff.fx.ShadowFx.GREEN, getX(), getY() + 0.2, getZ(), 14, 0.45, 0.15, 0.45, 0);
             sl.sendParticles(net.minecraft.core.particles.ParticleTypes.GLOW, getX(), getY() + 0.3, getZ(), 6, 0.4, 0.3, 0.4, 0.02);
