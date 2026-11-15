@@ -113,6 +113,9 @@ public class TentacleTask implements SkillTask {
         level.sendParticles(ParticleTypes.SQUID_INK, p.x, p.y + 0.3, p.z, 40, 1.5, 0.2, 1.5, 0.15);
         level.sendParticles(ShadowFx.GREEN, p.x, p.y + 0.5, p.z, 30, 1.5, 0.4, 1.5, 0);
         level.playSound(null, p.x, p.y, p.z, SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 0.9f, 0.6f);
+        com.alastor.staff.registry.ModSounds.play(level, p, com.alastor.staff.registry.ModSounds.SHADOW_BOOM, 1.0f, 1.25f);
+        level.sendParticles(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK,
+                level.getBlockState(net.minecraft.core.BlockPos.containing(p.x, p.y - 0.5, p.z))), p.x, p.y + 0.3, p.z, 60, 2.0, 0.3, 2.0, 0.4);
         hit.clear();
         hitBox(level, new AABB(p.x - 6, p.y - 1, p.z - 6, p.x + 6, p.y + 4, p.z + 6), damage * 0.8f, new Vec3(0, 0.7, 0));
     }

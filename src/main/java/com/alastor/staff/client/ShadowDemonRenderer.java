@@ -3,6 +3,7 @@ package com.alastor.staff.client;
 import com.alastor.staff.AlastorStaffMod;
 import com.alastor.staff.entity.ShadowDemonEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
@@ -38,8 +39,21 @@ public class ShadowDemonRenderer extends MobRenderer<ShadowDemonEntity, ShadowDe
             float sink = (1f - t) * (1f - t) * 2.6f;
             poseStack.translate(0, sink * size, 0);
         }
+        if (entity.deathTime > 0) {
+            float t = Math.min(1f, (entity.deathTime + partialTick) / 20f);
+            poseStack.translate(0, t * t * 2.8f * size, 0); // sink into the ground
+        }
         poseStack.scale(size, size, size);
         this.shadowRadius = 0.6f * size;
+    }
+
+    @Override
+    protected void setupRotations(ShadowDemonEntity e, PoseStack ps, float ageInTicks, float rotationYaw, float partialTick) {
+        if (e.deathTime > 0) {
+            ps.mulPose(Axis.YP.rotationDegrees(180f - rotationYaw)); // no tipping over
+            return;
+        }
+        super.setupRotations(e, ps, ageInTicks, rotationYaw, partialTick);
     }
 
     static class GlowLayer extends EyesLayer<ShadowDemonEntity, ShadowDemonModel> {

@@ -4,6 +4,8 @@ import com.alastor.staff.AlastorStaffMod;
 import com.alastor.staff.registry.ModEntities;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -21,6 +23,11 @@ public final class ClientSetup {
         event.registerEntityRenderer(ModEntities.SHADOW_DEMON.get(), ShadowDemonRenderer::new);
         event.registerEntityRenderer(ModEntities.TENTACLE.get(), TentacleRenderer::new);
         event.registerEntityRenderer(ModEntities.SHADOW_FX.get(), ShadowFxRenderer::new);
+    }
+
+    @SubscribeEvent
+    public static void registerOverlays(RegisterGuiOverlaysEvent event) {
+        event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "skill_hud", SkillHud::render);
     }
 
     private ClientSetup() {}

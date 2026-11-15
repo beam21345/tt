@@ -53,6 +53,13 @@ public class AlastorStaffItem extends Item {
         return SkillType.byIndex(tag == null ? 0 : tag.getInt(TAG_SKILL));
     }
 
+    /** Ticks left before {@code skill} can be used again (0 = ready). */
+    public static long cooldownRemaining(ItemStack stack, SkillType skill, long gameTime) {
+        CompoundTag tag = stack.getTag();
+        if (tag == null) return 0;
+        return Math.max(0, tag.getLong(TAG_CD + skill.id) - gameTime);
+    }
+
     public static boolean isRadioOn(ItemStack stack) {
         CompoundTag tag = stack.getTag();
         return tag != null && tag.getBoolean(TAG_RADIO);
@@ -71,7 +78,8 @@ public class AlastorStaffItem extends Item {
             tag.putInt(TAG_SKILL, next.ordinal());
             player.displayClientMessage(Component.translatable("msg.alastorstaff.selected",
                     Component.literal(String.valueOf(next.ordinal() + 1)), next.displayName()).withStyle(ChatFormatting.GREEN), true);
-            level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.0f, 0.6f);
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.6f, 0.6f);
+            com.alastor.staff.registry.ModSounds.play(server, player.position(), com.alastor.staff.registry.ModSounds.RADIO_STATIC, 0.35f, 1.6f + next.ordinal() * 0.05f);
             return InteractionResultHolder.success(stack);
         }
 
@@ -84,6 +92,7 @@ public class AlastorStaffItem extends Item {
                     .withStyle(on ? ChatFormatting.GREEN : ChatFormatting.GRAY), true);
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
                     on ? SoundEvents.WARDEN_EMERGE : SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 1.0f, on ? 1.3f : 0.8f);
+            com.alastor.staff.registry.ModSounds.play(server, player.position(), on ? com.alastor.staff.registry.ModSounds.RADIO_TUNE : com.alastor.staff.registry.ModSounds.RADIO_STATIC, 1.0f, on ? 1.0f : 0.7f);
             if (on) ShadowFxEntity.spawn(server, ShadowFxEntity.SIGIL, player.position(), (float) RadioDemonAura.HALF, 40, 6, 0f);
             player.getCooldowns().addCooldown(this, skill.cooldown);
             return InteractionResultHolder.success(stack);

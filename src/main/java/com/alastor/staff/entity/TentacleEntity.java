@@ -138,6 +138,13 @@ public class TentacleEntity extends Entity {
         if (!level().isClientSide && this.tickCount == 1 && level() instanceof net.minecraft.server.level.ServerLevel sl) {
             sl.sendParticles(com.alastor.staff.fx.ShadowFx.GREEN, getX(), getY() + 0.2, getZ(), 14, 0.45, 0.15, 0.45, 0);
             sl.sendParticles(net.minecraft.core.particles.ParticleTypes.GLOW, getX(), getY() + 0.3, getZ(), 6, 0.4, 0.3, 0.4, 0.02);
+            float th = thickness();
+            net.minecraft.world.level.block.state.BlockState ground = sl.getBlockState(blockPosition().below());
+            if (!ground.isAir()) {
+                sl.sendParticles(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK, ground),
+                        getX(), getY() + 0.2, getZ(), (int) (12 + 18 * th), 0.5 * th, 0.15, 0.5 * th, 0.3);
+            }
+            if (th >= 0.9f) com.alastor.staff.registry.ModSounds.play(sl, position(), com.alastor.staff.registry.ModSounds.TENTACLE_BURST, 0.6f + 0.3f * th, 1.25f - 0.2f * Math.min(th, 2f) + random.nextFloat() * 0.15f);
         }
         if (!level().isClientSide && this.tickCount >= getLife()) this.discard();
     }

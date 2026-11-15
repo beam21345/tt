@@ -56,6 +56,7 @@ public class DomainTask implements SkillTask {
             level.sendParticles(ParticleTypes.SCULK_SOUL, center.x, center.y + 0.2, center.z, 2, HALF * 0.6, 0.1, HALF * 0.6, 0.01);
         }
         if (age % 8 == 0) ShadowFx.crackle(level, center, HALF, 2);
+        if (age % 60 == 30) com.alastor.staff.registry.ModSounds.play(level, center, com.alastor.staff.registry.ModSounds.SHADOW_HUM, 1.5f, 0.75f);
         if (age % 40 == 1) {
             level.playSound(null, center.x, center.y, center.z, SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 1.5f, 0.6f);
         }

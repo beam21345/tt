@@ -20,6 +20,9 @@ import net.minecraft.world.phys.Vec3;
  * SIGIL (voodoo circle), RING (expanding wave), RIFT (shadow crack), DOMAIN (shadow circle), PILLAR (light beam).
  */
 public class ShadowFxEntity extends Entity {
+    /** Client-only bookkeeping: whether this effect already shook the camera. */
+    public boolean clientShakeDone;
+
     public static final int SIGIL = 0, RING = 1, RIFT = 2, DOMAIN = 3, PILLAR = 4, BOLT = 5;
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.INT);
@@ -68,6 +71,7 @@ public class ShadowFxEntity extends Entity {
         e.entityData.set(EZ, (float) (to.z - from.z));
         e.entityData.set(RED, red);
         level.addFreshEntity(e);
+        if (level.getRandom().nextFloat() < 0.4f) com.alastor.staff.registry.ModSounds.play(level, from, com.alastor.staff.registry.ModSounds.ZAP, 0.5f, 0.8f + level.getRandom().nextFloat() * 0.6f);
         return e;
     }
 

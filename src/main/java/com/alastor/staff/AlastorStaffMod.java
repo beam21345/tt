@@ -21,6 +21,7 @@ public class AlastorStaffMod {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModItems.ITEMS.register(modBus);
         ModEntities.ENTITIES.register(modBus);
+        com.alastor.staff.registry.ModSounds.SOUNDS.register(modBus);
         modBus.addListener(this::onAttributes);
         modBus.addListener(this::onCreativeTab);
     }

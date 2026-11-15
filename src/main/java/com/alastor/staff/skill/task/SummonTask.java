@@ -81,6 +81,7 @@ public class SummonTask implements SkillTask {
             level.sendParticles(ShadowFx.GREEN, at.x, at.y + 1.6, at.z, 30, 0.6, 0.8, 0.6, 0);
             level.sendParticles(ParticleTypes.SONIC_BOOM, at.x, at.y + 1, at.z, 1, 0, 0, 0, 0);
             level.playSound(null, at.x, at.y, at.z, SoundEvents.WARDEN_EMERGE, SoundSource.PLAYERS, 0.8f, 1.3f);
+            com.alastor.staff.registry.ModSounds.play(level, at, com.alastor.staff.registry.ModSounds.SHADOW_BOOM, 1.2f, 1.3f);
             return true;
         }
         return false;

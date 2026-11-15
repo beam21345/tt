@@ -80,6 +80,7 @@ public final class Skills {
         level.sendParticles(ShadowFx.GREEN, p.getX(), p.getY() + 0.3, p.getZ(), 30, 1.2, 0.2, 1.2, 0);
         level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.PLAYERS, 1.2f, 0.5f);
         level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.WARDEN_ROAR, SoundSource.PLAYERS, 0.5f, 1.4f);
+        com.alastor.staff.registry.ModSounds.play(level, p.position(), com.alastor.staff.registry.ModSounds.RADIO_STATIC, 1.0f, 1.3f);
         return true;
     }
 
@@ -98,6 +99,7 @@ public final class Skills {
             SkillTaskManager.add(level, new DelayedTask(i * 6, l -> SkillTaskManager.add(l, new SummonTask(p, at, size))));
         }
         level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.PLAYERS, 1.2f, 0.6f);
+        com.alastor.staff.registry.ModSounds.play(level, c, com.alastor.staff.registry.ModSounds.SHADOW_HUM, 1.5f, 1.2f);
         return true;
     }
 
@@ -112,6 +114,8 @@ public final class Skills {
         level.sendParticles(ParticleTypes.SONIC_BOOM, c.x, c.y + 1, c.z, 1, 0, 0, 0, 0);
         level.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_SONIC_BOOM, SoundSource.PLAYERS, 2.0f, 0.6f);
         level.playSound(null, c.x, c.y, c.z, SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, 1.2f, 1.4f);
+        com.alastor.staff.registry.ModSounds.play(level, c, com.alastor.staff.registry.ModSounds.RADIO_TUNE, 2.0f, 1.0f);
+        com.alastor.staff.registry.ModSounds.play(level, c, com.alastor.staff.registry.ModSounds.SHADOW_BOOM, 2.0f, 0.9f);
         SkillTaskManager.add(level, new ShockwaveTask(p, c));
 
         for (int w = 0; w < 3; w++) {
@@ -126,6 +130,7 @@ public final class Skills {
         ShadowFxEntity.spawn(level, ShadowFxEntity.RING, c, 21f, 24, 16, 0f);
         level.sendParticles(ParticleTypes.SONIC_BOOM, c.x, c.y + 1, c.z, 1, 0, 0, 0, 0);
         level.playSound(null, c.x, c.y, c.z, SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 1.5f, 0.8f + wave * 0.2f);
+        com.alastor.staff.registry.ModSounds.play(level, c, com.alastor.staff.registry.ModSounds.RADIO_STATIC, 1.6f, 0.8f + wave * 0.15f);
 
         // strike points: enemies first, then fill every direction
         java.util.List<Vec3> strikes = new java.util.ArrayList<>();
@@ -180,6 +185,8 @@ public final class Skills {
         ShadowFxEntity.spawn(level, ShadowFxEntity.RING, c, 16f, 18, 14, 0f);
         ShadowFx.crackle(level, c, 12, 8);
         level.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_EMERGE, SoundSource.PLAYERS, 1.5f, 0.8f);
+        com.alastor.staff.registry.ModSounds.play(level, c, com.alastor.staff.registry.ModSounds.SHADOW_HUM, 2.0f, 0.8f);
+        com.alastor.staff.registry.ModSounds.play(level, c, com.alastor.staff.registry.ModSounds.SHADOW_BOOM, 1.5f, 1.1f);
         level.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_SONIC_BOOM, SoundSource.PLAYERS, 1.0f, 0.5f);
         level.sendParticles(ParticleTypes.SQUID_INK, c.x, c.y + 0.3, c.z, 200, 10, 0.1, 10, 0.08);
         SkillTaskManager.add(level, new DomainTask(p, c));

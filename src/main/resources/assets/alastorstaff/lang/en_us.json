@@ -13,5 +13,13 @@
   "msg.alastorstaff.radio_off": "Radio Demon: OFF",
   "tooltip.alastorstaff.radio_on": "Radio Demon: active",
   "tooltip.alastorstaff.radio_off": "Radio Demon: inactive",
-  "tooltip.alastorstaff.controls": "Right-click: use skill | Sneak + Right-click: switch skill"
+  "tooltip.alastorstaff.controls": "Right-click: use skill | Sneak + Right-click: switch skill",
+  "subtitles.alastorstaff.radio_static": "Radio static crackles",
+  "subtitles.alastorstaff.radio_tune": "Radio dial tunes",
+  "subtitles.alastorstaff.shadow_boom": "Shadow erupts",
+  "subtitles.alastorstaff.shadow_hum": "Shadows hum",
+  "subtitles.alastorstaff.tentacle_burst": "Tentacle bursts out",
+  "subtitles.alastorstaff.zap": "Lightning crackles",
+  "entity.alastorstaff.shadow_tentacle": "Shadow Tentacle",
+  "entity.alastorstaff.shadow_fx": "Shadow Effect"
 }

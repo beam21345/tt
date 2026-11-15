@@ -143,15 +143,30 @@ public class ShadowDemonEntity extends PathfinderMob {
     public void tick() {
         super.tick();
         if (this.level() instanceof ServerLevel sl) {
-            if (--life <= 0) {
-                sl.sendParticles(ShadowFx.BLACK, getX(), getY() + 1, getZ(), 40, 0.4, 0.8, 0.4, 0);
-                sl.sendParticles(ParticleTypes.SQUID_INK, getX(), getY() + 1, getZ(), 15, 0.3, 0.6, 0.3, 0.05);
-                this.discard();
+            if (--life <= 0 && this.isAlive()) {
+                this.kill(); // dissolves via tickDeath
                 return;
             }
             float sz = getDemonSize();
             if (tickCount % 3 == 0) sl.sendParticles(ShadowFx.BLACK, getX(), getY() + 0.3, getZ(), 3, 0.35 * sz, 0.2, 0.35 * sz, 0);
             if (tickCount % 6 == 0) sl.sendParticles(ParticleTypes.SQUID_INK, getX(), getY() + 0.1, getZ(), 1, 0.3 * sz, 0.0, 0.3 * sz, 0.01);
+        }
+    }
+
+    /** Instead of toppling over, the demon melts back down into the shadow. */
+    @Override
+    protected void tickDeath() {
+        ++this.deathTime;
+        if (this.level() instanceof ServerLevel sl) {
+            float sz = getDemonSize();
+            double h = getBbHeight() * (1.0 - deathTime / 20.0);
+            sl.sendParticles(ShadowFx.BLACK, getX(), getY() + h * 0.5, getZ(), 8, 0.35 * sz, h * 0.4 + 0.1, 0.35 * sz, 0);
+            sl.sendParticles(ParticleTypes.SQUID_INK, getX(), getY() + 0.2, getZ(), 3, 0.4 * sz, 0.05, 0.4 * sz, 0.04);
+            if (deathTime % 4 == 0) sl.sendParticles(ShadowFx.GREEN, getX(), getY() + h, getZ(), 4, 0.2, 0.1, 0.2, 0);
+            if (deathTime >= 20) {
+                sl.sendParticles(ParticleTypes.SCULK_SOUL, getX(), getY() + 0.3, getZ(), 6, 0.4, 0.1, 0.4, 0.05);
+                this.remove(RemovalReason.KILLED);
+            }
         }
     }
 

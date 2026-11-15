@@ -13,5 +13,13 @@
   "msg.alastorstaff.radio_off": "Radio Demon: ปิด",
   "tooltip.alastorstaff.radio_on": "Radio Demon: กำลังทำงาน",
   "tooltip.alastorstaff.radio_off": "Radio Demon: ปิดอยู่",
-  "tooltip.alastorstaff.controls": "คลิกขวา: ใช้สกิล | ย่อ + คลิกขวา: เปลี่ยนสกิล"
+  "tooltip.alastorstaff.controls": "คลิกขวา: ใช้สกิล | ย่อ + คลิกขวา: เปลี่ยนสกิล",
+  "subtitles.alastorstaff.radio_static": "เสียงซ่าวิทยุ",
+  "subtitles.alastorstaff.radio_tune": "เสียงหมุนหาคลื่นวิทยุ",
+  "subtitles.alastorstaff.shadow_boom": "เงาระเบิด",
+  "subtitles.alastorstaff.shadow_hum": "เสียงเงาครางต่ำ",
+  "subtitles.alastorstaff.tentacle_burst": "หนวดเงาพุ่งออกมา",
+  "subtitles.alastorstaff.zap": "สายฟ้าแลบ",
+  "entity.alastorstaff.shadow_tentacle": "หนวดเงา",
+  "entity.alastorstaff.shadow_fx": "เอฟเฟกต์เงา"
 }

@@ -166,6 +166,9 @@ public class FractureTask implements SkillTask {
         level.playSound(null, c.x, c.y, c.z, SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 3.0f, 0.5f);
         level.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_SONIC_BOOM, SoundSource.PLAYERS, 2.5f, 0.6f);
         level.playSound(null, c.x, c.y, c.z, SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, 1.5f, 1.2f);
+        com.alastor.staff.registry.ModSounds.play(level, c, com.alastor.staff.registry.ModSounds.SHADOW_BOOM, 3.0f, 0.75f);
+        level.sendParticles(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK,
+                level.getBlockState(net.minecraft.core.BlockPos.containing(c.x, c.y - 0.5, c.z))), c.x, c.y + 0.5, c.z, 200, 4.0, 0.5, 4.0, 0.6);
 
         for (LivingEntity e : swallowed.values()) {
             if (!e.isAlive()) continue;

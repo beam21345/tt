@@ -39,6 +39,16 @@ public class ShadowFxRenderer extends EntityRenderer<ShadowFxEntity> {
 
     @Override
     public void render(ShadowFxEntity e, float entityYaw, float partialTick, PoseStack ps, MultiBufferSource buffers, int light) {
+        if (!e.clientShakeDone && e.tickCount >= 1) {
+            e.clientShakeDone = true;
+            float strength = switch (e.variant()) {
+                case ShadowFxEntity.PILLAR -> e.size() >= 4f ? 0.95f : e.size() >= 2f ? 0.55f : 0f;
+                case ShadowFxEntity.RING -> e.size() >= 15f ? 0.5f : e.size() >= 8f ? 0.28f : 0f;
+                case ShadowFxEntity.DOMAIN -> 0.45f;
+                default -> 0f;
+            };
+            if (strength > 0f) CameraShake.add(e.position(), strength, 48f);
+        }
         float age = e.tickCount + partialTick;
         int life = e.life();
         float alpha = Math.min(1f, age / 4f) * Math.min(1f, (life - age) / 8f);

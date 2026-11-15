@@ -1,0 +1,38 @@
+{
+  "radio_static": {
+    "sounds": [
+      "alastorstaff:radio_static"
+    ],
+    "subtitle": "subtitles.alastorstaff.radio_static"
+  },
+  "radio_tune": {
+    "sounds": [
+      "alastorstaff:radio_tune"
+    ],
+    "subtitle": "subtitles.alastorstaff.radio_tune"
+  },
+  "shadow_boom": {
+    "sounds": [
+      "alastorstaff:shadow_boom"
+    ],
+    "subtitle": "subtitles.alastorstaff.shadow_boom"
+  },
+  "shadow_hum": {
+    "sounds": [
+      "alastorstaff:shadow_hum"
+    ],
+    "subtitle": "subtitles.alastorstaff.shadow_hum"
+  },
+  "tentacle_burst": {
+    "sounds": [
+      "alastorstaff:tentacle_burst"
+    ],
+    "subtitle": "subtitles.alastorstaff.tentacle_burst"
+  },
+  "zap": {
+    "sounds": [
+      "alastorstaff:zap"
+    ],
+    "subtitle": "subtitles.alastorstaff.zap"
+  }
+}
