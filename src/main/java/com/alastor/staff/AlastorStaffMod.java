@@ -22,6 +22,7 @@ public class AlastorStaffMod {
         ModItems.ITEMS.register(modBus);
         ModEntities.ENTITIES.register(modBus);
         com.alastor.staff.registry.ModSounds.SOUNDS.register(modBus);
+        com.alastor.staff.network.ModNetwork.register();
         modBus.addListener(this::onAttributes);
         modBus.addListener(this::onCreativeTab);
     }

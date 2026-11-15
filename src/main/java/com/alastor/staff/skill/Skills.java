@@ -1,6 +1,7 @@
 package com.alastor.staff.skill;
 
 import com.alastor.staff.entity.ShadowFxEntity;
+import com.alastor.staff.entity.TentacleEntity;
 import com.alastor.staff.fx.ShadowFx;
 import com.alastor.staff.skill.task.DelayedTask;
 import com.alastor.staff.skill.task.DomainTask;
@@ -35,6 +36,7 @@ public final class Skills {
             case SHADOW_FRACTURE -> shadowFracture(level, p);
             case SHADOW_DOMAIN -> shadowDomain(level, p);
             case RADIO_DEMON -> false;
+            case SHADOW_STEP -> shadowStep(level, p);
         };
     }
 
@@ -51,28 +53,36 @@ public final class Skills {
                         && e.position().subtract(p.position()).normalize().dot(look) > 0.4);
         targets.sort(Comparator.comparingDouble((LivingEntity e) -> e.distanceToSqr(p)));
 
-        // a path of smaller tentacles racing from the caster to the aim point
+        // a path of smaller tentacles racing from the caster to the aim point; each one rises from the
+        // real ground, so over a cliff or a drop they climb all the way up to the caster's level
         Vec3 from = p.position();
         double dist = Math.min(40, Math.sqrt(from.distanceToSqr(aim)));
         for (int i = 2; i < dist; i += 4) {
             Vec3 pt = from.add(flat.scale(i)).add(new Vec3(-flat.z, 0, flat.x).scale((i / 3) % 2 == 0 ? 1.2 : -1.2));
-            Vec3 base = new Vec3(pt.x, Targeting.groundY(level, pt.x, p.getY(), pt.z), pt.z);
-            SkillTaskManager.add(level, new TentacleTask(p, base, i / 2, 5.0 + rnd.nextDouble() * 2, 6f, 2.4));
+            double refY = from.y + (aim.y - from.y) * (i / Math.max(1.0, dist));
+            Double g = Targeting.findGround(level, pt.x, refY, pt.z);
+            if (g == null) continue;
+            double h = Math.max(5.0 + rnd.nextDouble() * 2, refY - g + 4.0);
+            SkillTaskManager.add(level, new TentacleTask(p, new Vec3(pt.x, g, pt.z), i / 2, h, 6f, 2.4));
         }
 
         int delay = (int) dist, made = 0;
         for (LivingEntity t : targets) {
             if (made >= 8) break;
-            Vec3 base = new Vec3(t.getX(), Targeting.groundY(level, t.getX(), t.getY(), t.getZ()), t.getZ());
-            SkillTaskManager.add(level, new TentacleTask(p, base, delay, 14.0 + rnd.nextDouble() * 3, 12f, 3.6, flat));
+            Double g = Targeting.findGround(level, t.getX(), t.getY(), t.getZ());
+            if (g == null) continue;
+            double h = Math.max(14.0 + rnd.nextDouble() * 3, t.getY() - g + 8.0);
+            SkillTaskManager.add(level, new TentacleTask(p, new Vec3(t.getX(), g, t.getZ()), delay, h, 12f, 3.6, flat));
             delay += 2;
             made++;
         }
         for (int i = made; i < 10; i++) {
             double a = rnd.nextDouble() * Math.PI * 2, r = 3 + rnd.nextDouble() * 7;
             double x = aim.x + Math.cos(a) * r, z = aim.z + Math.sin(a) * r;
-            Vec3 base = new Vec3(x, Targeting.groundY(level, x, aim.y, z), z);
-            SkillTaskManager.add(level, new TentacleTask(p, base, delay, 12.0 + rnd.nextDouble() * 4, 12f, 3.6, flat));
+            Double g = Targeting.findGround(level, x, aim.y, z);
+            if (g == null) continue;
+            double h = Math.max(12.0 + rnd.nextDouble() * 4, aim.y - g + 6.0);
+            SkillTaskManager.add(level, new TentacleTask(p, new Vec3(x, g, z), delay, h, 12f, 3.6, flat));
             delay += 2;
         }
         ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, groundAt(level, p), 6.0f, 36, 5, 0f);
@@ -144,7 +154,8 @@ public final class Skills {
             double a = k * Math.PI * 2 / n + wave * 0.4 + rnd.nextDouble() * 0.3;
             double r = 5 + rnd.nextDouble() * 15;
             double x = c.x + Math.cos(a) * r, z = c.z + Math.sin(a) * r;
-            strikes.add(new Vec3(x, Targeting.groundY(level, x, c.y, z), z));
+            Double g = Targeting.findGround(level, x, c.y, z);
+            if (g != null) strikes.add(new Vec3(x, g, z));
         }
         for (Vec3 s : strikes) {
             ShadowFxEntity.bolt(level, staffTip, s.add(0, 0.2, 0), rnd.nextFloat() < 0.18f, 7 + rnd.nextInt(4));
@@ -168,8 +179,6 @@ public final class Skills {
         Vec3 origin = new Vec3(p.getX(), gy, p.getZ()).add(dir);
         ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, new Vec3(p.getX(), gy, p.getZ()), 5.6f, 40, 4, 0f);
         ShadowFx.crackle(level, new Vec3(p.getX(), gy, p.getZ()), 4, 4);
-        float yaw = (float) Math.toDegrees(Math.atan2(-dir.x, dir.z));
-        ShadowFxEntity.spawn(level, ShadowFxEntity.RIFT, origin, (float) FractureTask.LENGTH, FractureTask.LENGTH + 36, FractureTask.LENGTH, yaw);
         level.sendParticles(ParticleTypes.SQUID_INK, origin.x, gy + 0.2, origin.z, 30, 0.6, 0.1, 0.6, 0.1);
         level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.WARDEN_DIG, SoundSource.PLAYERS, 1.5f, 0.6f);
         level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.PLAYERS, 1.0f, 1.2f);
@@ -190,6 +199,67 @@ public final class Skills {
         level.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_SONIC_BOOM, SoundSource.PLAYERS, 1.0f, 0.5f);
         level.sendParticles(ParticleTypes.SQUID_INK, c.x, c.y + 0.3, c.z, 200, 10, 0.1, 10, 0.08);
         SkillTaskManager.add(level, new DomainTask(p, c));
+        return true;
+    }
+
+    // ---- 7. Shadow Step: sink into your shadow and burst out of the ground up to 18 blocks ahead.
+    private static boolean shadowStep(ServerLevel level, Player p) {
+        Vec3 look = p.getLookAngle();
+        Vec3 eye = p.getEyePosition();
+        net.minecraft.world.phys.BlockHitResult hit = level.clip(new net.minecraft.world.level.ClipContext(eye, eye.add(look.scale(18)),
+                net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, p));
+        Vec3 end = hit.getLocation().subtract(look.scale(0.7));
+
+        Vec3 dest = null;
+        for (double back = 0; back <= 17; back += 0.75) {
+            Vec3 feet = end.subtract(look.scale(back)).subtract(0, p.getEyeHeight(), 0);
+            Double g = Targeting.findGround(level, feet.x, feet.y, feet.z, 2, 4);
+            Vec3 cand = g != null ? new Vec3(feet.x, g, feet.z) : feet;
+            if (level.noCollision(p, p.getBoundingBox().move(cand.subtract(p.position())))) { dest = cand; break; }
+        }
+        if (dest == null || dest.distanceToSqr(p.position()) < 4) return false;
+
+        Vec3 from = p.position();
+        Vec3 fromGround = groundAt(level, p);
+        // departure: the caster sinks into a pool of shadow
+        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, fromGround, 3f, 26, 3, 0f);
+        level.sendParticles(ParticleTypes.SQUID_INK, from.x, from.y + 0.6, from.z, 40, 0.4, 0.8, 0.4, 0.08);
+        level.sendParticles(ShadowFx.BLACK, from.x, from.y + 1, from.z, 40, 0.4, 0.9, 0.4, 0);
+        // trail of shadow and lightning between the two points
+        Vec3 d = dest.subtract(from);
+        int n = (int) Math.max(2, d.length());
+        for (int i = 0; i <= n; i++) {
+            Vec3 q = from.add(d.scale((double) i / n)).add(0, 1, 0);
+            level.sendParticles(ShadowFx.BLACK, q.x, q.y, q.z, 4, 0.25, 0.3, 0.25, 0);
+            if (i % 3 == 0) level.sendParticles(ShadowFx.GREEN_SMALL, q.x, q.y, q.z, 2, 0.2, 0.2, 0.2, 0);
+        }
+        ShadowFx.zap(level, from.add(0, 1, 0), dest.add(0, 1, 0), 6);
+
+        p.teleportTo(dest.x, dest.y, dest.z);
+        p.fallDistance = 0;
+        p.setDeltaMovement(Vec3.ZERO);
+        p.hurtMarked = true;
+
+        // arrival: erupt out of the ground, knocking enemies back
+        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, dest, 4f, 30, 3, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, dest, 1.0f, 18, 3, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, dest, 6f, 14, 8, 0f);
+        for (int k = 0; k < 4; k++) {
+            double a = k * Math.PI / 2 + 0.6;
+            Vec3 root = dest.add(Math.cos(a) * 1.6, 0, Math.sin(a) * 1.6);
+            TentacleEntity t = TentacleEntity.spawn(level, root, new Vec3(Math.cos(a) * 1.2, 4.5, Math.sin(a) * 1.2), 18, 3, 0.9f);
+        }
+        level.sendParticles(ParticleTypes.SQUID_INK, dest.x, dest.y + 0.5, dest.z, 40, 0.8, 0.6, 0.8, 0.1);
+        ShadowFx.crackle(level, dest, 3, 3);
+        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(3.5), x -> Targeting.isValid(p, x))) {
+            Targeting.hurt(p, e, 6f);
+            Vec3 away = e.position().subtract(dest);
+            away = new Vec3(away.x, 0, away.z);
+            if (away.lengthSqr() > 1.0E-4) Targeting.launch(e, away.normalize().scale(1.3).add(0, 0.6, 0));
+        }
+        level.playSound(null, from.x, from.y, from.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0f, 0.5f);
+        com.alastor.staff.registry.ModSounds.play(level, dest, com.alastor.staff.registry.ModSounds.TENTACLE_BURST, 1.2f, 0.9f);
+        com.alastor.staff.registry.ModSounds.play(level, dest, com.alastor.staff.registry.ModSounds.RADIO_STATIC, 0.6f, 1.4f);
         return true;
     }
 

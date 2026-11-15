@@ -59,10 +59,21 @@ public class FractureTask implements SkillTask {
 
         if (age <= LENGTH) {
             Vec3 flat = origin.add(dir.scale(age));
-            curY = Targeting.groundY(level, flat.x, curY, flat.z);
+            Double g = Targeting.findGround(level, flat.x, curY, flat.z);
+            if (g != null) curY = g;                     // follows slopes, steps and cliff drops
             Vec3 head = new Vec3(flat.x, curY, flat.z);
             path.add(head);
             tip = head;
+            if (g != null) {
+                // lay the glowing crack down one block at a time, hugging the terrain
+                float yaw = (float) Math.toDegrees(Math.atan2(-dir.x, dir.z));
+                Vec3 seg = head.subtract(dir.scale(0.5));
+                ShadowFxEntity.spawn(level, ShadowFxEntity.RIFT, seg, 1.05f, EXPLODE_AT - age + 14, 2, yaw);
+                net.minecraft.world.level.block.state.BlockState gs =
+                        level.getBlockState(net.minecraft.core.BlockPos.containing(head.x, head.y - 0.5, head.z));
+                if (!gs.isAir()) level.sendParticles(new net.minecraft.core.particles.BlockParticleOption(
+                        ParticleTypes.BLOCK, gs), head.x, head.y + 0.2, head.z, 18, 1.2, 0.1, 1.2, 0.25);
+            }
             level.sendParticles(ParticleTypes.SQUID_INK, head.x, head.y + 0.2, head.z, 14, 1.0, 0.05, 1.0, 0.08);
             level.sendParticles(ShadowFx.GREEN, head.x, head.y + 0.5, head.z, 10, 0.8, 0.5, 0.8, 0);
             if (age % 4 == 0) ShadowFx.crackle(level, head, 2.5, 1);

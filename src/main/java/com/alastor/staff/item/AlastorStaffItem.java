@@ -60,6 +60,28 @@ public class AlastorStaffItem extends Item {
         return Math.max(0, tag.getLong(TAG_CD + skill.id) - gameTime);
     }
 
+    /** Switches to the next/previous skill with a little radio blip. Server side. */
+    public static void cycleSkill(Player player, ItemStack stack, int direction) {
+        if (!(player.level() instanceof ServerLevel server)) return;
+        SkillType next = SkillType.byIndex(getSkill(stack).ordinal() + direction);
+        stack.getOrCreateTag().putInt(TAG_SKILL, next.ordinal());
+        player.displayClientMessage(Component.translatable("msg.alastorstaff.selected",
+                Component.literal(String.valueOf(next.ordinal() + 1)), next.displayName()).withStyle(ChatFormatting.GREEN), true);
+        server.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.6f, 0.6f);
+        com.alastor.staff.registry.ModSounds.play(server, player.position(), com.alastor.staff.registry.ModSounds.RADIO_STATIC, 0.35f, 1.6f + next.ordinal() * 0.05f);
+    }
+
+    /** Soul Harvest: knocks {@code ticks} off every running cooldown. */
+    public static void reduceCooldowns(ItemStack stack, int ticks, long gameTime) {
+        CompoundTag tag = stack.getTag();
+        if (tag == null) return;
+        for (SkillType s : SkillType.values()) {
+            String key = TAG_CD + s.id;
+            long ready = tag.getLong(key);
+            if (ready > gameTime) tag.putLong(key, Math.max(gameTime, ready - ticks));
+        }
+    }
+
     public static boolean isRadioOn(ItemStack stack) {
         CompoundTag tag = stack.getTag();
         return tag != null && tag.getBoolean(TAG_RADIO);
@@ -74,15 +96,9 @@ public class AlastorStaffItem extends Item {
         CompoundTag tag = stack.getOrCreateTag();
 
         if (player.isShiftKeyDown()) {
-            SkillType next = SkillType.byIndex(getSkill(stack).ordinal() + 1);
-            tag.putInt(TAG_SKILL, next.ordinal());
-            player.displayClientMessage(Component.translatable("msg.alastorstaff.selected",
-                    Component.literal(String.valueOf(next.ordinal() + 1)), next.displayName()).withStyle(ChatFormatting.GREEN), true);
-            level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.6f, 0.6f);
-            com.alastor.staff.registry.ModSounds.play(server, player.position(), com.alastor.staff.registry.ModSounds.RADIO_STATIC, 0.35f, 1.6f + next.ordinal() * 0.05f);
+            cycleSkill(player, stack, 1);
             return InteractionResultHolder.success(stack);
         }
-
         SkillType skill = getSkill(stack);
 
         if (skill == SkillType.RADIO_DEMON) {
@@ -158,6 +174,10 @@ public class AlastorStaffItem extends Item {
         }
         tooltip.add(Component.translatable(isRadioOn(stack) ? "tooltip.alastorstaff.radio_on" : "tooltip.alastorstaff.radio_off")
                 .withStyle(ChatFormatting.DARK_GREEN));
+        tooltip.add(Component.translatable("tooltip.alastorstaff.passives").withStyle(ChatFormatting.DARK_GREEN));
+        for (String k : new String[]{"cradle", "retaliation", "harvest", "sight"}) {
+            tooltip.add(Component.literal(" • ").append(Component.translatable("tooltip.alastorstaff.passive." + k)).withStyle(ChatFormatting.GRAY));
+        }
         tooltip.add(Component.translatable("tooltip.alastorstaff.controls").withStyle(ChatFormatting.GRAY));
     }
 }

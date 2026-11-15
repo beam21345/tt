@@ -9,7 +9,8 @@ public enum SkillType {
     RADIO_SOUND("radio_sound", 300),
     SHADOW_FRACTURE("shadow_fracture", 400),
     SHADOW_DOMAIN("shadow_domain", 900),
-    RADIO_DEMON("radio_demon", 20);
+    RADIO_DEMON("radio_demon", 20),
+    SHADOW_STEP("shadow_step", 120);
 
     public final String id;
     public final int cooldown;

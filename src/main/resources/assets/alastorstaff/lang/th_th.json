@@ -13,7 +13,7 @@
   "msg.alastorstaff.radio_off": "Radio Demon: ปิด",
   "tooltip.alastorstaff.radio_on": "Radio Demon: กำลังทำงาน",
   "tooltip.alastorstaff.radio_off": "Radio Demon: ปิดอยู่",
-  "tooltip.alastorstaff.controls": "คลิกขวา: ใช้สกิล | ย่อ + คลิกขวา: เปลี่ยนสกิล",
+  "tooltip.alastorstaff.controls": "คลิกขวา: ใช้สกิล | R หรือ ย่อ+คลิกขวา: สกิลถัดไป | Shift+R: ย้อนกลับ",
   "subtitles.alastorstaff.radio_static": "เสียงซ่าวิทยุ",
   "subtitles.alastorstaff.radio_tune": "เสียงหมุนหาคลื่นวิทยุ",
   "subtitles.alastorstaff.shadow_boom": "เงาระเบิด",
@@ -21,5 +21,13 @@
   "subtitles.alastorstaff.tentacle_burst": "หนวดเงาพุ่งออกมา",
   "subtitles.alastorstaff.zap": "สายฟ้าแลบ",
   "entity.alastorstaff.shadow_tentacle": "หนวดเงา",
-  "entity.alastorstaff.shadow_fx": "เอฟเฟกต์เงา"
+  "entity.alastorstaff.shadow_fx": "เอฟเฟกต์เงา",
+  "skill.alastorstaff.shadow_step": "Shadow Step - ก้าวเงา",
+  "key.alastorstaff.cycle_skill": "เปลี่ยนสกิลคทา (กด Shift = ย้อนกลับ)",
+  "key.categories.alastorstaff": "Alastor Staff",
+  "tooltip.alastorstaff.passives": "พาสซีฟ:",
+  "tooltip.alastorstaff.passive.cradle": "Shadow Cradle - หนวดเงารับตัวตอนตกจากที่สูง",
+  "tooltip.alastorstaff.passive.retaliation": "Shadow Retaliation - โดนตีเบาลง 25% และหนวดสวนกลับ",
+  "tooltip.alastorstaff.passive.harvest": "Soul Harvest - ฆ่าศัตรูแล้วฟื้นเลือดและลดคูลดาวน์ 1 วิ",
+  "tooltip.alastorstaff.passive.sight": "Shadow Sight - มองเห็นในที่มืดตอนถือคทา"
 }
