@@ -13,7 +13,7 @@
   "msg.alastorstaff.radio_off": "Radio Demon: ปิด",
   "tooltip.alastorstaff.radio_on": "Radio Demon: กำลังทำงาน",
   "tooltip.alastorstaff.radio_off": "Radio Demon: ปิดอยู่",
-  "tooltip.alastorstaff.controls": "คลิกขวา: ใช้สกิล | R หรือ ย่อ+คลิกขวา: สกิลถัดไป | Shift+R: ย้อนกลับ",
+  "tooltip.alastorstaff.controls": "คลิกขวา: ใช้สกิล | R หรือ ย่อ+คลิกขวา: สกิลถัดไป | Shift+R: ย้อนกลับ | V: เรียก/เก็บคทา",
   "subtitles.alastorstaff.radio_static": "เสียงซ่าวิทยุ",
   "subtitles.alastorstaff.radio_tune": "เสียงหมุนหาคลื่นวิทยุ",
   "subtitles.alastorstaff.shadow_boom": "เงาระเบิด",
@@ -30,5 +30,7 @@
   "tooltip.alastorstaff.passive.retaliation": "Shadow Retaliation - โดนตีเบาลง 25% และหนวดสวนกลับ",
   "tooltip.alastorstaff.passive.harvest": "Soul Harvest - ฆ่าศัตรูแล้วฟื้นเลือดและลดคูลดาวน์ 1 วิ",
   "tooltip.alastorstaff.passive.sight": "Shadow Sight - มองเห็นในที่มืดตอนถือคทา",
-  "msg.alastorstaff.no_ground": "ตรงนั้นไม่มีพื้นให้ใช้สกิล"
+  "msg.alastorstaff.no_ground": "ตรงนั้นไม่มีพื้นให้ใช้สกิล",
+  "key.alastorstaff.summon_staff": "เรียก / เก็บคทา",
+  "msg.alastorstaff.inventory_full": "ช่องเก็บของเต็ม เรียกคทาไม่ได้"
 }

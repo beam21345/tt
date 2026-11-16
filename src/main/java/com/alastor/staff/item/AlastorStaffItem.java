@@ -83,6 +83,37 @@ public class AlastorStaffItem extends Item {
         }
     }
 
+    // ---------- cast animation state (synced to every client through the held item) ----------
+    private static final String TAG_CAST_AT = "CastAt";
+    private static final String TAG_CAST_ANIM = "CastAnim";
+
+    public static void markCast(ItemStack stack, int anim, long gameTime) {
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.putLong(TAG_CAST_AT, gameTime);
+        tag.putInt(TAG_CAST_ANIM, anim);
+    }
+
+    public static long castAt(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        return tag == null ? 0 : tag.getLong(TAG_CAST_AT);
+    }
+
+    public static int castAnim(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        return tag == null ? 0 : tag.getInt(TAG_CAST_ANIM);
+    }
+
+    @Override
+    public void initializeClient(java.util.function.Consumer<net.minecraftforge.client.extensions.common.IClientItemExtensions> consumer) {
+        consumer.accept(com.alastor.staff.client.StaffAnimations.INSTANCE);
+    }
+
+    /** Cooldown/animation data changes every cast – don't replay the "pull out" animation for that. */
+    @Override
+    public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
+        return slotChanged || oldStack.getItem() != newStack.getItem();
+    }
+
     public static boolean isRadioOn(ItemStack stack) {
         CompoundTag tag = stack.getTag();
         return tag != null && tag.getBoolean(TAG_RADIO);
@@ -92,13 +123,13 @@ public class AlastorStaffItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (level.isClientSide) return InteractionResultHolder.success(stack);
+        if (level.isClientSide) return InteractionResultHolder.consume(stack);
         ServerLevel server = (ServerLevel) level;
         CompoundTag tag = stack.getOrCreateTag();
 
         if (player.isShiftKeyDown()) {
             cycleSkill(player, stack, 1);
-            return InteractionResultHolder.success(stack);
+            return InteractionResultHolder.consume(stack);
         }
         SkillType skill = getSkill(stack);
 
@@ -112,7 +143,8 @@ public class AlastorStaffItem extends Item {
             com.alastor.staff.registry.ModSounds.play(server, player.position(), on ? com.alastor.staff.registry.ModSounds.RADIO_TUNE : com.alastor.staff.registry.ModSounds.RADIO_STATIC, 1.0f, on ? 1.0f : 0.7f);
             if (on) ShadowFx.spread(server, player.position(), (float) RadioDemonAura.HALF, 40, 6);
             player.getCooldowns().addCooldown(this, skill.cooldown);
-            return InteractionResultHolder.success(stack);
+            markCast(stack, skill.anim, level.getGameTime());
+            return InteractionResultHolder.consume(stack);
         }
 
         long now = level.getGameTime();
@@ -126,10 +158,11 @@ public class AlastorStaffItem extends Item {
 
         if (Skills.cast(skill, server, player)) {
             tag.putLong(TAG_CD + skill.id, now + skill.cooldown);
+            markCast(stack, skill.anim, now);
             player.getCooldowns().addCooldown(this, 10);
             player.displayClientMessage(Component.literal("✦ ").append(skill.displayName()).withStyle(ChatFormatting.DARK_GREEN), true);
         }
-        return InteractionResultHolder.success(stack);
+        return InteractionResultHolder.consume(stack);
     }
 
     // ---------- Radio Demon aura runs while it is anywhere in the inventory ----------

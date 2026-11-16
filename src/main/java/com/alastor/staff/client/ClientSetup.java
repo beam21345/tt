@@ -29,6 +29,7 @@ public final class ClientSetup {
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(ClientKeys.CYCLE_SKILL);
+        event.register(ClientKeys.SUMMON_STAFF);
     }
 
     @SubscribeEvent

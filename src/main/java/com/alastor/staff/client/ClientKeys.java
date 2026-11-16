@@ -19,10 +19,16 @@ public final class ClientKeys {
     public static final KeyMapping CYCLE_SKILL = new KeyMapping("key.alastorstaff.cycle_skill",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_R, "key.categories.alastorstaff");
 
+    public static final KeyMapping SUMMON_STAFF = new KeyMapping("key.alastorstaff.summon_staff",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_V, "key.categories.alastorstaff");
+
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
+        while (SUMMON_STAFF.consumeClick()) {
+            if (mc.player != null) ModNetwork.CHANNEL.sendToServer(new com.alastor.staff.network.SummonStaffPacket());
+        }
         while (CYCLE_SKILL.consumeClick()) {
             if (mc.player == null) continue;
             boolean holding = mc.player.getMainHandItem().getItem() instanceof AlastorStaffItem

@@ -16,6 +16,8 @@ public final class ModNetwork {
     public static void register() {
         CHANNEL.registerMessage(0, CycleSkillPacket.class, CycleSkillPacket::encode, CycleSkillPacket::decode,
                 CycleSkillPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(1, SummonStaffPacket.class, SummonStaffPacket::encode, SummonStaffPacket::decode,
+                SummonStaffPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
     }
 
     private ModNetwork() {}

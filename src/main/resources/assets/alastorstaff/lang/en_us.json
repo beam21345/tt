@@ -13,7 +13,7 @@
   "msg.alastorstaff.radio_off": "Radio Demon: OFF",
   "tooltip.alastorstaff.radio_on": "Radio Demon: active",
   "tooltip.alastorstaff.radio_off": "Radio Demon: inactive",
-  "tooltip.alastorstaff.controls": "Right-click: use | R / Sneak+Right-click: next | Shift+R: previous",
+  "tooltip.alastorstaff.controls": "Right-click: use | R / Sneak+Right-click: next | Shift+R: previous | V: summon/dismiss",
   "subtitles.alastorstaff.radio_static": "Radio static crackles",
   "subtitles.alastorstaff.radio_tune": "Radio dial tunes",
   "subtitles.alastorstaff.shadow_boom": "Shadow erupts",
@@ -30,5 +30,7 @@
   "tooltip.alastorstaff.passive.retaliation": "Shadow Retaliation - take 25% less damage, a tentacle strikes back",
   "tooltip.alastorstaff.passive.harvest": "Soul Harvest - kills heal you and cut cooldowns by 1s",
   "tooltip.alastorstaff.passive.sight": "Shadow Sight - see in the dark while held",
-  "msg.alastorstaff.no_ground": "No ground to strike from there"
+  "msg.alastorstaff.no_ground": "No ground to strike from there",
+  "key.alastorstaff.summon_staff": "Summon / dismiss staff",
+  "msg.alastorstaff.inventory_full": "No room for the staff"
 }
