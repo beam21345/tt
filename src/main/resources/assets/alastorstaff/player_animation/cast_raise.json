@@ -1,0 +1,110 @@
+{
+ "name": "cast_raise",
+ "author": "Alastor Staff mod",
+ "emote": {
+  "isLoop": "false",
+  "beginTick": 0,
+  "endTick": 18,
+  "stopTick": 24,
+  "degrees": true,
+  "moves": [
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "turn": 0,
+    "rightArm": {
+     "pitch": -75,
+     "roll": 0
+    },
+    "leftArm": {
+     "pitch": 0,
+     "roll": 0
+    },
+    "head": {
+     "pitch": 0
+    },
+    "body": {
+     "pitch": 0,
+     "roll": 0
+    }
+   },
+   {
+    "tick": 6,
+    "easing": "OUTBACK",
+    "turn": 0,
+    "rightArm": {
+     "pitch": -170,
+     "roll": 12
+    },
+    "leftArm": {
+     "pitch": -40,
+     "roll": -70
+    },
+    "head": {
+     "pitch": -22
+    },
+    "rightLeg": {
+     "roll": 4
+    },
+    "leftLeg": {
+     "roll": -6
+    },
+    "body": {
+     "pitch": -14,
+     "roll": 0
+    }
+   },
+   {
+    "tick": 14,
+    "easing": "INOUTSINE",
+    "turn": 0,
+    "rightArm": {
+     "pitch": -165,
+     "roll": 10
+    },
+    "leftArm": {
+     "pitch": -35,
+     "roll": -65
+    },
+    "head": {
+     "pitch": -18
+    },
+    "rightLeg": {
+     "roll": 4
+    },
+    "leftLeg": {
+     "roll": -6
+    },
+    "body": {
+     "pitch": -12
+    }
+   },
+   {
+    "tick": 24,
+    "easing": "INOUTSINE",
+    "turn": 0,
+    "rightArm": {
+     "pitch": -75,
+     "roll": 0
+    },
+    "leftArm": {
+     "pitch": 0,
+     "roll": 0
+    },
+    "head": {
+     "pitch": 0
+    },
+    "rightLeg": {
+     "roll": 0
+    },
+    "leftLeg": {
+     "roll": 0
+    },
+    "body": {
+     "pitch": 0,
+     "roll": 0
+    }
+   }
+  ]
+ }
+}

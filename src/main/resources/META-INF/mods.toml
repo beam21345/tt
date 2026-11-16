@@ -25,3 +25,17 @@ Right-click: use skill. Sneak + right-click: switch skill.
     versionRange="[1.20.1,1.21)"
     ordering="NONE"
     side="BOTH"
+
+[[dependencies.alastorstaff]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.4,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.alastorstaff]]
+    modId="playeranimator"
+    mandatory=true
+    versionRange="[1.0.0,)"
+    ordering="AFTER"
+    side="BOTH"

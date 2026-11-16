@@ -33,12 +33,18 @@ import java.util.List;
  * Alastor Staff.
  * Right-click: use the selected skill. Sneak + right-click: switch to the next skill.
  */
-public class AlastorStaffItem extends Item {
+public class AlastorStaffItem extends Item implements software.bernie.geckolib.animatable.GeoItem {
     private static final String TAG_SKILL = "AlastorSkill";
     private static final String TAG_RADIO = "RadioDemonOn";
     private static final String TAG_CD = "AlastorCd_";
 
     private final Multimap<Attribute, AttributeModifier> modifiers;
+    private final software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache geoCache =
+            software.bernie.geckolib.util.GeckoLibUtil.createInstanceCache(this);
+    private static final software.bernie.geckolib.core.animation.RawAnimation IDLE =
+            software.bernie.geckolib.core.animation.RawAnimation.begin().thenLoop("animation.alastor_staff.idle");
+    private static final software.bernie.geckolib.core.animation.RawAnimation CAST =
+            software.bernie.geckolib.core.animation.RawAnimation.begin().thenPlay("animation.alastor_staff.cast").thenLoop("animation.alastor_staff.idle");
 
     public AlastorStaffItem(Properties props) {
         super(props);
@@ -101,6 +107,25 @@ public class AlastorStaffItem extends Item {
     public static int castAnim(ItemStack stack) {
         CompoundTag tag = stack.getTag();
         return tag == null ? 0 : tag.getInt(TAG_CAST_ANIM);
+    }
+
+    // ---------- GeckoLib ----------
+    @Override
+    public void registerControllers(software.bernie.geckolib.core.animation.AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new software.bernie.geckolib.core.animation.AnimationController<>(this, "staff", 3, state -> {
+            ItemStack st = state.getData(software.bernie.geckolib.constant.DataTickets.ITEMSTACK);
+            Entity holder = state.getData(software.bernie.geckolib.constant.DataTickets.ENTITY);
+            if (st != null && holder != null) {
+                long at = castAt(st);
+                if (at > 0 && holder.level().getGameTime() - at < 20) return state.setAndContinue(CAST);
+            }
+            return state.setAndContinue(IDLE);
+        }));
+    }
+
+    @Override
+    public software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache getAnimatableInstanceCache() {
+        return geoCache;
     }
 
     @Override
@@ -168,6 +193,7 @@ public class AlastorStaffItem extends Item {
     // ---------- Radio Demon aura runs while it is anywhere in the inventory ----------
     @Override
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
+        if (level instanceof ServerLevel sl) software.bernie.geckolib.animatable.GeoItem.getOrAssignId(stack, sl); // per-staff animation state
         if (!level.isClientSide && entity instanceof Player player && isRadioOn(stack) && !player.isSpectator()) {
             RadioDemonAura.tick((ServerLevel) level, player);
         }

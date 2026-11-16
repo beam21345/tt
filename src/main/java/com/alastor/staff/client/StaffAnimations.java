@@ -30,6 +30,14 @@ public final class StaffAnimations implements IClientItemExtensions {
 
     private static final float IDLE_X = -1.30f;
 
+    private StaffGeoRenderer geoRenderer;
+
+    @Override
+    public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getCustomRenderer() {
+        if (geoRenderer == null) geoRenderer = new StaffGeoRenderer();
+        return geoRenderer;
+    }
+
     @Override
     public HumanoidModel.ArmPose getArmPose(LivingEntity entity, InteractionHand hand, ItemStack stack) {
         return STAFF_POSE;

@@ -27,6 +27,11 @@ public final class ClientSetup {
     }
 
     @SubscribeEvent
+    public static void clientSetup(net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) {
+        event.enqueueWork(PlayerCastAnimations::init);
+    }
+
+    @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(ClientKeys.CYCLE_SKILL);
         event.register(ClientKeys.SUMMON_STAFF);
