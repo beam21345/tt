@@ -33,16 +33,23 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
             new ModelLayerLocation(new ResourceLocation(AlastorStaffMod.MODID, "shadow_tentacle"), "main");
     private static final ResourceLocation TEX = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/tentacle.png");
     private static final ResourceLocation POOL = new ResourceLocation(AlastorStaffMod.MODID, "textures/fx/glow_pool.png");
+    private static final ResourceLocation SHADOW = new ResourceLocation(AlastorStaffMod.MODID, "textures/fx/shadow.png");
+    private static final ResourceLocation WEAPON_TEX = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/weapon.png");
+    private static final ResourceLocation WEAPON_GLOW = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/weapon_glow.png");
     private static final int SEGMENTS = 30;
 
     private final ModelPart segment;
     private final ModelPart tipPart;
+    private final ModelPart sword, axe, spear;
 
     public TentacleRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
         ModelPart root = ctx.bakeLayer(LAYER);
         this.segment = root.getChild("segment");
         this.tipPart = root.getChild("tip");
+        this.sword = root.getChild("sword");
+        this.axe = root.getChild("axe");
+        this.spear = root.getChild("spear");
         this.shadowRadius = 0.8f;
     }
 
@@ -54,6 +61,25 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
                 CubeListBuilder.create()
                         .texOffs(0, 32).addBox(-6f, 0f, -6f, 12f, 10f, 12f)
                         .texOffs(48, 32).addBox(-2f, 10f, -2f, 4f, 8f, 4f), PartPose.ZERO);
+        // Weapons grown out of the tentacle tip (built small, scaled up when rendered).
+        mesh.getRoot().addOrReplaceChild("sword", CubeListBuilder.create().texOffs(0, 0)
+                .addBox(-0.6f, -3f, -0.6f, 1.2f, 3f, 1.2f)          // grip
+                .addBox(-3.2f, 0f, -0.8f, 6.4f, 1f, 1.6f)           // crossguard
+                .addBox(-1.5f, 1f, -0.3f, 3f, 16f, 0.6f)            // blade
+                .addBox(-1f, 17f, -0.3f, 2f, 2f, 0.6f)              // tapering point
+                .addBox(-0.5f, 19f, -0.3f, 1f, 2f, 0.6f), PartPose.ZERO);
+        mesh.getRoot().addOrReplaceChild("axe", CubeListBuilder.create().texOffs(0, 0)
+                .addBox(-0.6f, -3f, -0.6f, 1.2f, 21f, 1.2f)         // haft
+                .addBox(0.6f, 11f, -0.35f, 3f, 7f, 0.7f)            // blade body
+                .addBox(3.6f, 9.5f, -0.3f, 2.2f, 10f, 0.6f)         // wide curved edge
+                .addBox(-3.2f, 14f, -0.3f, 2.6f, 1.6f, 0.6f)        // back spike
+                .addBox(-0.4f, 18f, -0.4f, 0.8f, 3f, 0.8f), PartPose.ZERO);
+        mesh.getRoot().addOrReplaceChild("spear", CubeListBuilder.create().texOffs(0, 0)
+                .addBox(-0.45f, -3f, -0.45f, 0.9f, 22f, 0.9f)       // shaft
+                .addBox(-1.6f, 18f, -0.3f, 3.2f, 1f, 0.6f)          // barbs
+                .addBox(-1.2f, 19f, -0.3f, 2.4f, 3f, 0.6f)          // head
+                .addBox(-0.7f, 22f, -0.3f, 1.4f, 2f, 0.6f)
+                .addBox(-0.3f, 24f, -0.3f, 0.6f, 2f, 0.6f), PartPose.ZERO);
         return LayerDefinition.create(mesh, 64, 64);
     }
 
@@ -122,11 +148,34 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
             ps.popPose();
         }
 
-        // green light on the ground only while it bursts out
+        // weapon carried at the tip, aligned with the last segment
+        int weapon = e.weapon();
+        if (weapon != TentacleEntity.PLAIN) {
+            ModelPart part = weapon == TentacleEntity.SWORD ? sword : weapon == TentacleEntity.AXE ? axe : spear;
+            Vector3f end = pts[SEGMENTS];
+            Vector3f wd = new Vector3f(end).sub(pts[SEGMENTS - 2]);
+            if (wd.lengthSquared() > 1.0E-6f) {
+                wd.normalize();
+                float k = Math.min(1f, ext) * thick * 2.3f; // giant: ~8 blocks long at thickness 2.2
+                for (int pass = 0; pass < 2; pass++) {
+                    VertexConsumer wv = buffers.getBuffer(pass == 0 ? RenderType.entityCutoutNoCull(WEAPON_TEX) : RenderType.eyes(WEAPON_GLOW));
+                    ps.pushPose();
+                    ps.translate(end.x, end.y, end.z);
+                    ps.mulPose(new Quaternionf().rotationTo(0f, 1f, 0f, wd.x, wd.y, wd.z));
+                    ps.mulPose(Axis.YP.rotation(e.phase()));
+                    ps.scale(k, k, k);
+                    part.render(ps, wv, pass == 0 ? light : LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+                    ps.popPose();
+                }
+            }
+        }
+
+        // it rises out of a pool of darkness; a brief green flash only while bursting out
+        float r = 1.0f + thick * 1.6f;
+        groundPool(ps, buffers.getBuffer(RenderType.entityTranslucent(SHADOW)), r * (0.6f + 0.4f * Math.min(1f, ext)), Math.min(1f, ext * 1.5f) * 0.95f);
         float glow = e.glow(age);
         if (glow > 0.01f) {
-            float r = 1.2f + thick * 1.8f;
-            groundPool(ps, buffers.getBuffer(RenderType.entityTranslucent(POOL)), r, glow);
+            groundPool(ps, buffers.getBuffer(RenderType.entityTranslucent(POOL)), r * 0.8f, glow * 0.45f);
         }
         super.render(e, entityYaw, partialTick, ps, buffers, light);
     }

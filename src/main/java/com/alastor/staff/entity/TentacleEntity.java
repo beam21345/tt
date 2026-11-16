@@ -27,6 +27,10 @@ public class TentacleEntity extends Entity {
     private static final EntityDataAccessor<Float> PHASE = SynchedEntityData.defineId(TentacleEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> LIFE = SynchedEntityData.defineId(TentacleEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> RISE = SynchedEntityData.defineId(TentacleEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> WEAPON = SynchedEntityData.defineId(TentacleEntity.class, EntityDataSerializers.INT);
+
+    /** What the tentacle carries at its tip. */
+    public static final int PLAIN = 0, SWORD = 1, AXE = 2, SPEAR = 3;
 
     public static final int FALL_TICKS = 7;
 
@@ -62,7 +66,12 @@ public class TentacleEntity extends Entity {
         this.entityData.define(PHASE, 0f);
         this.entityData.define(LIFE, 40);
         this.entityData.define(RISE, 6);
+        this.entityData.define(WEAPON, PLAIN);
     }
+
+    public void setWeapon(int weapon) { this.entityData.set(WEAPON, weapon); }
+
+    public int weapon() { return this.entityData.get(WEAPON); }
 
     public void setTip(Vec3 tip) {
         this.entityData.set(TIP_X, (float) tip.x);

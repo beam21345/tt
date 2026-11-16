@@ -119,7 +119,7 @@ public class FractureTask implements SkillTask {
 
         if (age == LENGTH + 1) {
             level.playSound(null, tip.x, tip.y, tip.z, SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.PLAYERS, 2.0f, 0.6f);
-            ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, tip, 8f, EXPLODE_AT - LENGTH + 30, 10, 0f);
+            ShadowFx.spread(level, tip, 8f, EXPLODE_AT - LENGTH + 30, 10);
         }
 
         // Tentacles erupt from the ground around the tip and seize the victims.

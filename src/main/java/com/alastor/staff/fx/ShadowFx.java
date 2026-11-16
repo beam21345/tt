@@ -80,6 +80,35 @@ public final class ShadowFx {
         }
     }
 
+    /** A pool of darkness spreading out on the ground. */
+    public static ShadowFxEntity spread(ServerLevel level, Vec3 at, float radius, int life, int grow) {
+        return ShadowFxEntity.spawn(level, ShadowFxEntity.SHADOW, at, radius, life, grow, 0f);
+    }
+
+    /**
+     * A trail of darkness flowing along the ground from {@code from} to {@code to}, one puddle per
+     * ~1.5 blocks, each appearing a little later. Returns the number of ticks until it arrives.
+     */
+    public static int stream(ServerLevel level, Vec3 from, Vec3 to, int life, double blocksPerTick) {
+        Vec3 d = new Vec3(to.x - from.x, 0, to.z - from.z);
+        double len = d.length();
+        int n = (int) Math.max(1, len / 1.5);
+        double y = from.y;
+        for (int i = 1; i <= n; i++) {
+            Vec3 pt = from.add(d.scale((double) i / n));
+            Double g = com.alastor.staff.util.Targeting.findGround(level, pt.x, y + (to.y - from.y) * i / n, pt.z);
+            if (g == null) continue;
+            y = g;
+            final Vec3 at = new Vec3(pt.x, g, pt.z);
+            int delay = (int) (len * i / n / blocksPerTick);
+            com.alastor.staff.skill.task.SkillTaskManager.add(level, new com.alastor.staff.skill.task.DelayedTask(delay, l -> {
+                spread(l, at, 1.3f, life, 3);
+                l.sendParticles(net.minecraft.core.particles.ParticleTypes.SQUID_INK, at.x, at.y + 0.1, at.z, 3, 0.5, 0.02, 0.5, 0.01);
+            }));
+        }
+        return (int) (len / blocksPerTick);
+    }
+
     /** A lightning bolt between two points; 20% chance to be red. */
     public static void zap(ServerLevel level, Vec3 from, Vec3 to, int life) {
         ShadowFxEntity.bolt(level, from, to, level.getRandom().nextFloat() < 0.2f, life);

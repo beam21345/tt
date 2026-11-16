@@ -39,7 +39,7 @@ public class SummonTask implements SkillTask {
     public boolean tick(ServerLevel level) {
         age++;
         if (age == 1) {
-            ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, at, 5.0f, 50, 8, 0f);
+            ShadowFx.spread(level, at, 5.0f, 50, 8);
             ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, at, 0.9f, 32, 10, 0f);
             for (int k = 0; k < 4; k++) {
                 double a = k * Math.PI / 2;

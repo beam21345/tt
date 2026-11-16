@@ -26,6 +26,7 @@ public class ShadowFxRenderer extends EntityRenderer<ShadowFxEntity> {
     private static final ResourceLocation DOMAIN = tex("domain");
     private static final ResourceLocation PILLAR = tex("pillar");
     private static final ResourceLocation POOL = tex("glow_pool");
+    private static final ResourceLocation SHADOW = tex("shadow");
     private static final int FULL_BRIGHT = LightTexture.FULL_BRIGHT;
 
     public ShadowFxRenderer(EntityRendererProvider.Context ctx) {
@@ -127,6 +128,18 @@ public class ShadowFxRenderer extends EntityRenderer<ShadowFxEntity> {
                 cylinder(ps, vc, r, h, alpha, age * 0.08f);
                 cylinder(ps, vc, r * 0.45f, h * 1.1f, alpha, -age * 0.12f);
                 flat(ps, buffers.getBuffer(RenderType.entityTranslucent(POOL)), r * 3f, alpha * pulse);
+            }
+            case ShadowFxEntity.SHADOW -> {
+                // spreading pool of darkness, two layers turning slowly so the edge seems to creep
+                ps.translate(0, (e.getId() % 9) * 0.003, 0);
+                float r = size * (0.15f + 0.85f * ease);
+                ps.pushPose();
+                ps.mulPose(Axis.YP.rotation(age * 0.012f + e.getId()));
+                flat(ps, buffers.getBuffer(RenderType.entityTranslucent(SHADOW)), r * 1.08f, alpha * 0.55f);
+                ps.popPose();
+                ps.translate(0, 0.004, 0);
+                ps.mulPose(Axis.YP.rotation(-age * 0.02f + e.getId() * 0.7f));
+                flat(ps, buffers.getBuffer(RenderType.entityTranslucent(SHADOW)), r, alpha * 0.95f);
             }
             case ShadowFxEntity.BOLT -> {
                 Random rnd = new Random(e.getId() * 341873128712L + (long) (age / 2));

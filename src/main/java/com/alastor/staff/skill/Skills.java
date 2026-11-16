@@ -40,56 +40,47 @@ public final class Skills {
         };
     }
 
-    // ---- 1. Shadow Tentacles: a wave of huge tentacles erupts toward the target, then they slam down.
+    // ---- 1. Shadow Tentacles: darkness streams from the caster toward the target, tentacles burst out of it
+    //         along the way, then the finale: one giant sigil, giant tentacles seize, lift and crush everything.
     private static boolean shadowTentacles(ServerLevel level, Player p) {
         RandomSource rnd = p.getRandom();
-        Vec3 look = p.getLookAngle();
         Vec3 flat = Targeting.horizontalLook(p);
         HitResult hr = p.pick(48.0, 1.0f, false);
         Vec3 aim = hr.getLocation();
 
-        List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(36),
+        // aim at the nearest enemy in front if there is one, otherwise at the looked-at spot
+        Vec3 look = p.getLookAngle();
+        List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(40),
                 e -> Targeting.isValid(p, e) && p.hasLineOfSight(e)
-                        && e.position().subtract(p.position()).normalize().dot(look) > 0.4);
+                        && e.position().subtract(p.position()).normalize().dot(look) > 0.75);
         targets.sort(Comparator.comparingDouble((LivingEntity e) -> e.distanceToSqr(p)));
+        if (!targets.isEmpty() && hr.getType() != HitResult.Type.BLOCK) aim = targets.get(0).position();
 
-        // a path of smaller tentacles racing from the caster to the aim point; each one rises from the
-        // real ground, so over a cliff or a drop they climb all the way up to the caster's level
-        Vec3 from = p.position();
-        double dist = Math.min(40, Math.sqrt(from.distanceToSqr(aim)));
-        for (int i = 2; i < dist; i += 4) {
-            Vec3 pt = from.add(flat.scale(i)).add(new Vec3(-flat.z, 0, flat.x).scale((i / 3) % 2 == 0 ? 1.2 : -1.2));
-            double refY = from.y + (aim.y - from.y) * (i / Math.max(1.0, dist));
+        Double cg = Targeting.findGround(level, aim.x, aim.y, aim.z);
+        if (cg == null) {
+            p.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.alastorstaff.no_ground"), true);
+            return false;
+        }
+        Vec3 center = new Vec3(aim.x, cg, aim.z);
+        Vec3 from = groundAt(level, p);
+
+        ShadowFx.spread(level, from, 3.5f, 60, 4);
+        int arrive = ShadowFx.stream(level, from, center, 50, 2.5);
+
+        // tentacles lash up out of the stream as it flows (rooted on real ground, reaching up to our level)
+        double dist = Math.sqrt(from.distanceToSqr(center));
+        for (int i = 3; i < dist - 4; i += 4) {
+            Vec3 pt = from.add(center.subtract(from).scale(i / dist)).add(new Vec3(-flat.z, 0, flat.x).scale((i / 4) % 2 == 0 ? 1.5 : -1.5));
+            double refY = from.y + (center.y - from.y) * (i / dist);
             Double g = Targeting.findGround(level, pt.x, refY, pt.z);
             if (g == null) continue;
-            double h = Math.max(5.0 + rnd.nextDouble() * 2, refY - g + 4.0);
-            SkillTaskManager.add(level, new TentacleTask(p, new Vec3(pt.x, g, pt.z), i / 2, h, 6f, 2.4));
+            double h = Math.max(6.0 + rnd.nextDouble() * 2, p.getY() - g + 3.0);
+            SkillTaskManager.add(level, new TentacleTask(p, new Vec3(pt.x, g, pt.z), (int) (i / 2.5) + 2, h, 7f, 2.0));
         }
+        SkillTaskManager.add(level, new DelayedTask(arrive + 2, l -> SkillTaskManager.add(l, new FinaleTask(p, center))));
 
-        int delay = (int) dist, made = 0;
-        for (LivingEntity t : targets) {
-            if (made >= 8) break;
-            Double g = Targeting.findGround(level, t.getX(), t.getY(), t.getZ());
-            if (g == null) continue;
-            double h = Math.max(14.0 + rnd.nextDouble() * 3, t.getY() - g + 8.0);
-            SkillTaskManager.add(level, new TentacleTask(p, new Vec3(t.getX(), g, t.getZ()), delay, h, 12f, 3.6, flat));
-            delay += 2;
-            made++;
-        }
-        for (int i = made; i < 10; i++) {
-            double a = rnd.nextDouble() * Math.PI * 2, r = 3 + rnd.nextDouble() * 7;
-            double x = aim.x + Math.cos(a) * r, z = aim.z + Math.sin(a) * r;
-            Double g = Targeting.findGround(level, x, aim.y, z);
-            if (g == null) continue;
-            double h = Math.max(12.0 + rnd.nextDouble() * 4, aim.y - g + 6.0);
-            SkillTaskManager.add(level, new TentacleTask(p, new Vec3(x, g, z), delay, h, 12f, 3.6, flat));
-            delay += 2;
-        }
-        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, groundAt(level, p), 6.0f, 36, 5, 0f);
-        ShadowFx.crackle(level, groundAt(level, p), 4, 4);
-        level.sendParticles(ShadowFx.GREEN, p.getX(), p.getY() + 0.3, p.getZ(), 30, 1.2, 0.2, 1.2, 0);
+        level.sendParticles(ParticleTypes.SQUID_INK, p.getX(), p.getY() + 0.3, p.getZ(), 40, 1.2, 0.1, 1.2, 0.05);
         level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.PLAYERS, 1.2f, 0.5f);
-        level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.WARDEN_ROAR, SoundSource.PLAYERS, 0.5f, 1.4f);
         com.alastor.staff.registry.ModSounds.play(level, p.position(), com.alastor.staff.registry.ModSounds.RADIO_STATIC, 1.0f, 1.3f);
         return true;
     }
@@ -97,7 +88,7 @@ public final class Skills {
     // ---- 2. Shadow Summoning: three summoning rituals, one after another.
     private static boolean shadowSummoning(ServerLevel level, Player p) {
         Vec3 c = groundAt(level, p);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, c, 9f, 70, 10, 0f);
+        ShadowFx.spread(level, c, 9f, 70, 10);
         ShadowFx.crackle(level, c, 8, 6);
         float[] sizes = {0.75f, 1.15f, 1.7f}; // small, medium and large demon
         for (int i = 0; i < 3; i++) {
@@ -119,7 +110,7 @@ public final class Skills {
         Vec3 c = groundAt(level, p);
         Vec3 staffTip = c.add(0, 2.4, 0);
 
-        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, c, 10.0f, 70, 6, 0f);
+        ShadowFx.spread(level, c, 10.0f, 70, 6);
         ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, c, 2.2f, 50, 6, 0f);
         level.sendParticles(ParticleTypes.SONIC_BOOM, c.x, c.y + 1, c.z, 1, 0, 0, 0, 0);
         level.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_SONIC_BOOM, SoundSource.PLAYERS, 2.0f, 0.6f);
@@ -161,7 +152,7 @@ public final class Skills {
             ShadowFxEntity.bolt(level, staffTip, s.add(0, 0.2, 0), rnd.nextFloat() < 0.18f, 7 + rnd.nextInt(4));
             // green light bursting up from the ground where the bolt lands
             ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, s, 0.7f + rnd.nextFloat() * 0.4f, 18, 4, 0f);
-            ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, s, 1.6f, 18, 3, 0f);
+            ShadowFx.spread(level, s, 1.6f, 18, 3);
             level.sendParticles(ShadowFx.GREEN, s.x, s.y + 0.5, s.z, 12, 0.5, 1.0, 0.5, 0);
             for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class,
                     new AABB(s.x - 2.5, s.y - 1, s.z - 2.5, s.x + 2.5, s.y + 4, s.z + 2.5), x -> Targeting.isValid(p, x))) {
@@ -177,7 +168,7 @@ public final class Skills {
         Vec3 dir = Targeting.horizontalLook(p);
         double gy = Targeting.groundY(level, p.getX(), p.getY(), p.getZ());
         Vec3 origin = new Vec3(p.getX(), gy, p.getZ()).add(dir);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, new Vec3(p.getX(), gy, p.getZ()), 5.6f, 40, 4, 0f);
+        ShadowFx.spread(level, new Vec3(p.getX(), gy, p.getZ()), 5.6f, 40, 4);
         ShadowFx.crackle(level, new Vec3(p.getX(), gy, p.getZ()), 4, 4);
         level.sendParticles(ParticleTypes.SQUID_INK, origin.x, gy + 0.2, origin.z, 30, 0.6, 0.1, 0.6, 0.1);
         level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.WARDEN_DIG, SoundSource.PLAYERS, 1.5f, 0.6f);
@@ -186,80 +177,43 @@ public final class Skills {
         return true;
     }
 
-    // ---- 5. Shadow Domain: circular shadow field, 15 blocks across, that pins everything inside.
+    // ---- 5. Shadow Domain: darkness pours out over a 75-block circle; weapon-tentacles rise from it.
     private static boolean shadowDomain(ServerLevel level, Player p) {
         Vec3 c = groundAt(level, p);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.DOMAIN, c, 15f, 200, 16, 0f);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, c, 2.4f, 36, 6, 0f);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, c, 16f, 18, 14, 0f);
-        ShadowFx.crackle(level, c, 12, 8);
-        level.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_EMERGE, SoundSource.PLAYERS, 1.5f, 0.8f);
-        com.alastor.staff.registry.ModSounds.play(level, c, com.alastor.staff.registry.ModSounds.SHADOW_HUM, 2.0f, 0.8f);
-        com.alastor.staff.registry.ModSounds.play(level, c, com.alastor.staff.registry.ModSounds.SHADOW_BOOM, 1.5f, 1.1f);
-        level.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_SONIC_BOOM, SoundSource.PLAYERS, 1.0f, 0.5f);
-        level.sendParticles(ParticleTypes.SQUID_INK, c.x, c.y + 0.3, c.z, 200, 10, 0.1, 10, 0.08);
-        SkillTaskManager.add(level, new DomainTask(p, c));
+        ShadowFx.spread(level, c, 6f, 240, 6);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, c, (float) com.alastor.staff.skill.task.ArmoryTask.RADIUS, 34, 30, 0f);
+        level.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_EMERGE, SoundSource.PLAYERS, 2.0f, 0.7f);
+        com.alastor.staff.registry.ModSounds.play(level, c, com.alastor.staff.registry.ModSounds.SHADOW_BOOM, 2.0f, 0.8f);
+        level.sendParticles(ParticleTypes.SQUID_INK, c.x, c.y + 0.3, c.z, 120, 3, 0.1, 3, 0.15);
+        SkillTaskManager.add(level, new com.alastor.staff.skill.task.ArmoryTask(p, c));
         return true;
     }
 
-    // ---- 7. Shadow Step: sink into your shadow and burst out of the ground up to 18 blocks ahead.
+    // ---- 7. Shadow Step: melt into the ground and race as a streak of darkness to any ground in sight
+    //         (up to 200 blocks). There must be ground to land on – no stepping into thin air.
     private static boolean shadowStep(ServerLevel level, Player p) {
         Vec3 look = p.getLookAngle();
         Vec3 eye = p.getEyePosition();
-        net.minecraft.world.phys.BlockHitResult hit = level.clip(new net.minecraft.world.level.ClipContext(eye, eye.add(look.scale(18)),
+        net.minecraft.world.phys.BlockHitResult hit = level.clip(new net.minecraft.world.level.ClipContext(eye, eye.add(look.scale(200)),
                 net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, p));
-        Vec3 end = hit.getLocation().subtract(look.scale(0.7));
-
+        if (hit.getType() != HitResult.Type.BLOCK) {
+            p.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.alastorstaff.no_ground"), true);
+            return false;
+        }
         Vec3 dest = null;
-        for (double back = 0; back <= 17; back += 0.75) {
-            Vec3 feet = end.subtract(look.scale(back)).subtract(0, p.getEyeHeight(), 0);
-            Double g = Targeting.findGround(level, feet.x, feet.y, feet.z, 2, 4);
-            Vec3 cand = g != null ? new Vec3(feet.x, g, feet.z) : feet;
-            if (level.noCollision(p, p.getBoundingBox().move(cand.subtract(p.position())))) { dest = cand; break; }
+        Vec3 hitPos = hit.getLocation();
+        for (double back = 0.4; back <= 8 && dest == null; back += 0.8) {
+            Vec3 q = hitPos.subtract(look.scale(back));
+            Double g = Targeting.findGround(level, q.x, q.y, q.z, 2, 6);
+            if (g == null) continue;
+            Vec3 cand = new Vec3(q.x, g, q.z);
+            if (level.noCollision(p, p.getBoundingBox().move(cand.subtract(p.position())))) dest = cand;
         }
-        if (dest == null || dest.distanceToSqr(p.position()) < 4) return false;
-
-        Vec3 from = p.position();
-        Vec3 fromGround = groundAt(level, p);
-        // departure: the caster sinks into a pool of shadow
-        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, fromGround, 3f, 26, 3, 0f);
-        level.sendParticles(ParticleTypes.SQUID_INK, from.x, from.y + 0.6, from.z, 40, 0.4, 0.8, 0.4, 0.08);
-        level.sendParticles(ShadowFx.BLACK, from.x, from.y + 1, from.z, 40, 0.4, 0.9, 0.4, 0);
-        // trail of shadow and lightning between the two points
-        Vec3 d = dest.subtract(from);
-        int n = (int) Math.max(2, d.length());
-        for (int i = 0; i <= n; i++) {
-            Vec3 q = from.add(d.scale((double) i / n)).add(0, 1, 0);
-            level.sendParticles(ShadowFx.BLACK, q.x, q.y, q.z, 4, 0.25, 0.3, 0.25, 0);
-            if (i % 3 == 0) level.sendParticles(ShadowFx.GREEN_SMALL, q.x, q.y, q.z, 2, 0.2, 0.2, 0.2, 0);
+        if (dest == null || dest.distanceToSqr(p.position()) < 4) {
+            p.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.alastorstaff.no_ground"), true);
+            return false;
         }
-        ShadowFx.zap(level, from.add(0, 1, 0), dest.add(0, 1, 0), 6);
-
-        p.teleportTo(dest.x, dest.y, dest.z);
-        p.fallDistance = 0;
-        p.setDeltaMovement(Vec3.ZERO);
-        p.hurtMarked = true;
-
-        // arrival: erupt out of the ground, knocking enemies back
-        ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, dest, 4f, 30, 3, 0f);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, dest, 1.0f, 18, 3, 0f);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, dest, 6f, 14, 8, 0f);
-        for (int k = 0; k < 4; k++) {
-            double a = k * Math.PI / 2 + 0.6;
-            Vec3 root = dest.add(Math.cos(a) * 1.6, 0, Math.sin(a) * 1.6);
-            TentacleEntity t = TentacleEntity.spawn(level, root, new Vec3(Math.cos(a) * 1.2, 4.5, Math.sin(a) * 1.2), 18, 3, 0.9f);
-        }
-        level.sendParticles(ParticleTypes.SQUID_INK, dest.x, dest.y + 0.5, dest.z, 40, 0.8, 0.6, 0.8, 0.1);
-        ShadowFx.crackle(level, dest, 3, 3);
-        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(3.5), x -> Targeting.isValid(p, x))) {
-            Targeting.hurt(p, e, 6f);
-            Vec3 away = e.position().subtract(dest);
-            away = new Vec3(away.x, 0, away.z);
-            if (away.lengthSqr() > 1.0E-4) Targeting.launch(e, away.normalize().scale(1.3).add(0, 0.6, 0));
-        }
-        level.playSound(null, from.x, from.y, from.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0f, 0.5f);
-        com.alastor.staff.registry.ModSounds.play(level, dest, com.alastor.staff.registry.ModSounds.TENTACLE_BURST, 1.2f, 0.9f);
-        com.alastor.staff.registry.ModSounds.play(level, dest, com.alastor.staff.registry.ModSounds.RADIO_STATIC, 0.6f, 1.4f);
+        SkillTaskManager.add(level, new com.alastor.staff.skill.task.ShadowStepTask(p, dest));
         return true;
     }
 

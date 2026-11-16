@@ -29,5 +29,6 @@
   "tooltip.alastorstaff.passive.cradle": "Shadow Cradle - หนวดเงารับตัวตอนตกจากที่สูง",
   "tooltip.alastorstaff.passive.retaliation": "Shadow Retaliation - โดนตีเบาลง 25% และหนวดสวนกลับ",
   "tooltip.alastorstaff.passive.harvest": "Soul Harvest - ฆ่าศัตรูแล้วฟื้นเลือดและลดคูลดาวน์ 1 วิ",
-  "tooltip.alastorstaff.passive.sight": "Shadow Sight - มองเห็นในที่มืดตอนถือคทา"
+  "tooltip.alastorstaff.passive.sight": "Shadow Sight - มองเห็นในที่มืดตอนถือคทา",
+  "msg.alastorstaff.no_ground": "ตรงนั้นไม่มีพื้นให้ใช้สกิล"
 }

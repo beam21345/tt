@@ -10,7 +10,7 @@ public enum SkillType {
     SHADOW_FRACTURE("shadow_fracture", 400),
     SHADOW_DOMAIN("shadow_domain", 900),
     RADIO_DEMON("radio_demon", 20),
-    SHADOW_STEP("shadow_step", 120);
+    SHADOW_STEP("shadow_step", 160);
 
     public final String id;
     public final int cooldown;

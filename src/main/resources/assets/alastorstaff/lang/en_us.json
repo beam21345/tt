@@ -29,5 +29,6 @@
   "tooltip.alastorstaff.passive.cradle": "Shadow Cradle - tentacles catch your falls",
   "tooltip.alastorstaff.passive.retaliation": "Shadow Retaliation - take 25% less damage, a tentacle strikes back",
   "tooltip.alastorstaff.passive.harvest": "Soul Harvest - kills heal you and cut cooldowns by 1s",
-  "tooltip.alastorstaff.passive.sight": "Shadow Sight - see in the dark while held"
+  "tooltip.alastorstaff.passive.sight": "Shadow Sight - see in the dark while held",
+  "msg.alastorstaff.no_ground": "No ground to strike from there"
 }

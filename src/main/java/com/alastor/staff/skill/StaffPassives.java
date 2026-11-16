@@ -95,6 +95,14 @@ public final class StaffPassives {
         }
     }
 
+    /** Nothing can touch you while you travel as a shadow. */
+    @SubscribeEvent
+    public static void onAttacked(net.minecraftforge.event.entity.living.LivingAttackEvent event) {
+        if (event.getEntity() instanceof Player p && com.alastor.staff.skill.task.ShadowStepTask.TRAVELLING.contains(p.getUUID())) {
+            event.setCanceled(true);
+        }
+    }
+
     // ---------------- Shadow Retaliation ----------------
     @SubscribeEvent
     public static void onHurt(LivingHurtEvent event) {

@@ -41,7 +41,7 @@ public class CatchTask implements SkillTask {
                 TentacleEntity t = TentacleEntity.spawn(level, root, body().subtract(root), HOLD + 10, 2, 0.9f);
                 if (t != null) arms.add(t);
             }
-            ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, ground, 2.6f, 30, 4, 0f);
+            ShadowFx.spread(level, ground, 2.6f, 30, 4);
             ModSounds.play(level, ground, ModSounds.TENTACLE_BURST, 1.0f, 1.1f);
         }
         // cushion the fall: tentacles hold the player and lower them softly

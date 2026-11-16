@@ -61,7 +61,7 @@ public class TentacleTask implements SkillTask {
     public boolean tick(ServerLevel level) {
         if (!warned) {
             warned = true;
-            ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, base, (float) (1.2 + radius * 0.6), delay + total(), Math.max(2, delay), 0f);
+            ShadowFx.spread(level, base, (float) (1.2 + radius * 0.6), delay + total(), Math.max(2, delay));
         }
         if (delay > 0) {
             delay--;

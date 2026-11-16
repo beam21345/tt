@@ -23,7 +23,7 @@ public class ShadowFxEntity extends Entity {
     /** Client-only bookkeeping: whether this effect already shook the camera. */
     public boolean clientShakeDone;
 
-    public static final int SIGIL = 0, RING = 1, RIFT = 2, DOMAIN = 3, PILLAR = 4, BOLT = 5;
+    public static final int SIGIL = 0, RING = 1, RIFT = 2, DOMAIN = 3, PILLAR = 4, BOLT = 5, SHADOW = 6;
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> SIZE = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.FLOAT);

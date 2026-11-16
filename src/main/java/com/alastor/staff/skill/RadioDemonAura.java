@@ -43,6 +43,7 @@ public final class RadioDemonAura {
             ShadowFx.ring(level, c.add(0, 0.15, 0), HALF - 0.5, 32, ShadowFx.BLACK_SMALL, -rot);
         }
         if (now % 12 == 0) ShadowFx.crackle(level, c, HALF, 2);
+        if (now % 20 == 0) ShadowFx.spread(level, c, (float) HALF * 0.8f, 26, 4);   // darkness pooling around the caster
 
         // Projectiles: catch anything flying toward us that isn't ours and throw it back.
         AABB projBox = p.getBoundingBox().inflate(HALF + 2.0);
