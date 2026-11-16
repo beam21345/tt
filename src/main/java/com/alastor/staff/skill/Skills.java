@@ -4,6 +4,7 @@ import com.alastor.staff.entity.ShadowFxEntity;
 import com.alastor.staff.entity.TentacleEntity;
 import com.alastor.staff.fx.ShadowFx;
 import com.alastor.staff.skill.task.DelayedTask;
+import com.alastor.staff.skill.task.FinaleTask;
 import com.alastor.staff.skill.task.DomainTask;
 import com.alastor.staff.skill.task.FractureTask;
 import com.alastor.staff.skill.task.ShockwaveTask;
