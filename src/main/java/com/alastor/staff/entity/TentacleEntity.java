@@ -249,7 +249,8 @@ public class TentacleEntity extends Entity {
     /** Server: tear through any breakable block the tentacle's body passes through. */
     private void smashAlongBody(net.minecraft.server.level.ServerLevel sl) {
         if (destroyer == null || extension(tickCount) < 0.15f) return;
-        if (!(sl.getPlayerByUUID(destroyer) instanceof net.minecraft.world.entity.player.Player owner)) return;
+        net.minecraft.world.entity.player.Player owner = sl.getPlayerByUUID(destroyer);
+        if (owner == null) return;
         if (serverSpine == null) serverSpine = new float[(SEGMENTS + 1) * 3];
         targetCurve(tickCount, tipX(), tipY(), tipZ(), serverSpine);
         float th = thickness();
