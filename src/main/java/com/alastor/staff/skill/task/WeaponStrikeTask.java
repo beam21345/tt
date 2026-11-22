@@ -76,7 +76,7 @@ public class WeaponStrikeTask implements SkillTask {
 
     private void erupt(ServerLevel level, Vec3 tip, int life, int rise, float thick) {
         t = TentacleEntity.spawn(level, root, tip, life, rise, thick);
-        if (t != null) t.setWeapon(weapon);
+        if (t != null) { t.setWeapon(weapon); t.setDestroyer(owner); }
         debris(level, root, 30);
         ModSounds.play(level, root, ModSounds.TENTACLE_BURST, 1.6f, 0.75f);
     }

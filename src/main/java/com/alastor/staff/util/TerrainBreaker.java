@@ -42,9 +42,20 @@ public final class TerrainBreaker {
             if (broken >= max) break;
             BlockState st = level.getBlockState(pos);
             if (!canBreak(level, owner, pos, st)) continue;
-            level.destroyBlock(pos, drop, owner);
+            level.destroyBlock(pos, drop, owner);   // vanilla break sound + crumble particles
             level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, st), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                    8, 0.3, 0.3, 0.3, 0.2);
+                    14, 0.35, 0.35, 0.35, 0.25);
+            // chunks of the block fly off away from the blow
+            Vec3 bc = Vec3.atCenterOf(pos);
+            Vec3 out = bc.subtract(at);
+            out = out.lengthSqr() > 1.0E-4 ? out.normalize() : new Vec3(0, 1, 0);
+            int chunks = 1 + level.getRandom().nextInt(2);
+            for (int k = 0; k < chunks; k++) {
+                Vec3 vel = out.scale(0.25 + level.getRandom().nextDouble() * 0.35)
+                        .add((level.getRandom().nextDouble() - 0.5) * 0.3, 0.25 + level.getRandom().nextDouble() * 0.35,
+                                (level.getRandom().nextDouble() - 0.5) * 0.3);
+                com.alastor.staff.entity.DebrisEntity.spawn(level, bc, st, vel);
+            }
             broken++;
         }
         return broken;

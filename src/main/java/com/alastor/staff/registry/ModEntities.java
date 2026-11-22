@@ -1,6 +1,7 @@
 package com.alastor.staff.registry;
 
 import com.alastor.staff.AlastorStaffMod;
+import com.alastor.staff.entity.DebrisEntity;
 import com.alastor.staff.entity.HurledBlockEntity;
 import com.alastor.staff.entity.ShadowDemonEntity;
 import com.alastor.staff.entity.ShadowFxEntity;
@@ -47,6 +48,14 @@ public final class ModEntities {
                     .clientTrackingRange(10)
                     .updateInterval(1)
                     .build("hurled_block"));
+
+    public static final RegistryObject<EntityType<DebrisEntity>> DEBRIS = ENTITIES.register("debris",
+            () -> EntityType.Builder.<DebrisEntity>of(DebrisEntity::new, MobCategory.MISC)
+                    .sized(0.4f, 0.4f)
+                    .noSave()
+                    .clientTrackingRange(6)
+                    .updateInterval(3)
+                    .build("debris"));
 
     private ModEntities() {}
 }

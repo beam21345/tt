@@ -44,7 +44,7 @@ public class ComboStrikeTask implements SkillTask {
     private TentacleEntity rise(ServerLevel level, Vec3 root, Vec3 tip, int life, float thick) {
         ShadowFx.spread(level, root, 1.6f + thick, life + 10, 3);
         TentacleEntity t = TentacleEntity.spawn(level, root, tip, life, 3, thick);
-        if (t != null) ts.add(t);
+        if (t != null) { t.setDestroyer(p); ts.add(t); }
         return t;
     }
 

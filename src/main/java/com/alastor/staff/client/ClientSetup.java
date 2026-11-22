@@ -25,6 +25,7 @@ public final class ClientSetup {
         event.registerEntityRenderer(ModEntities.TENTACLE.get(), TentacleRenderer::new);
         event.registerEntityRenderer(ModEntities.SHADOW_FX.get(), ShadowFxRenderer::new);
         event.registerEntityRenderer(ModEntities.HURLED_BLOCK.get(), HurledBlockRenderer::new);
+        event.registerEntityRenderer(ModEntities.DEBRIS.get(), DebrisRenderer::new);
     }
 
     @SubscribeEvent

@@ -34,6 +34,15 @@ public class TentacleEntity extends Entity {
 
     public static final int FALL_TICKS = 7;
 
+    /** Server only: whose tentacle this is, if it should tear through blocks it touches. */
+    @javax.annotation.Nullable private java.util.UUID destroyer;
+    private float[] serverSpine;
+
+    /** Lets this tentacle smash blocks along its body (subject to the terrain config). */
+    public void setDestroyer(net.minecraft.world.entity.player.Player owner) {
+        this.destroyer = owner.getUUID();
+    }
+
     /** Number of segments along the tentacle's spine. */
     public static final int SEGMENTS = 30;
 
@@ -237,9 +246,29 @@ public class TentacleEntity extends Entity {
         }
     }
 
+    /** Server: tear through any breakable block the tentacle's body passes through. */
+    private void smashAlongBody(net.minecraft.server.level.ServerLevel sl) {
+        if (destroyer == null || extension(tickCount) < 0.15f) return;
+        if (!(sl.getPlayerByUUID(destroyer) instanceof net.minecraft.world.entity.player.Player owner)) return;
+        if (serverSpine == null) serverSpine = new float[(SEGMENTS + 1) * 3];
+        targetCurve(tickCount, tipX(), tipY(), tipZ(), serverSpine);
+        float th = thickness();
+        int budget = 14;
+        // root: the tentacle cracks the ground open as it bursts out
+        if (tickCount == 2) budget -= com.alastor.staff.util.TerrainBreaker.smash(sl, owner, position().add(0, -0.3, 0), 0.6 + th * 0.45, 6);
+        for (int i = 3; i <= SEGMENTS && budget > 0; i += 3) {
+            float s = (float) i / SEGMENTS;
+            double r = Math.max(0.6, th * 0.55 * (1.0 - 0.8 * s) + 0.35);
+            Vec3 p = position().add(serverSpine[i * 3], serverSpine[i * 3 + 1], serverSpine[i * 3 + 2]);
+            if (p.y < getY() + 0.5) continue;   // don't dig below its own root
+            budget -= com.alastor.staff.util.TerrainBreaker.smash(sl, owner, p, r, Math.min(4, budget));
+        }
+    }
+
     @Override
     public void tick() {
         super.tick();
+        if (!level().isClientSide && tickCount % 2 == 0 && level() instanceof net.minecraft.server.level.ServerLevel sl) smashAlongBody(sl);
         if (level().isClientSide) {
             if (!tipInit) {
                 curTipX = tipX(); curTipY = tipY(); curTipZ = tipZ();

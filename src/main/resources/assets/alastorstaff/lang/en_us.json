@@ -34,5 +34,6 @@
   "key.alastorstaff.summon_staff": "Summon / dismiss staff",
   "msg.alastorstaff.inventory_full": "No room for the staff",
   "tooltip.alastorstaff.combo": "Left-click: 5-hit tentacle combo | Sneak + Left-click: rip up and hurl the ground",
-  "entity.alastorstaff.hurled_block": "Hurled Ground"
+  "entity.alastorstaff.hurled_block": "Hurled Ground",
+  "entity.alastorstaff.debris": "Block Debris"
 }

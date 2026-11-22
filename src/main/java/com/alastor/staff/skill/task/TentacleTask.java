@@ -75,6 +75,7 @@ public class TentacleTask implements SkillTask {
             lean = new Vec3(lx, maxHeight, lz);
             float thick = (float) Math.min(2.6, 1.0 + maxHeight * 0.06);
             tentacle = TentacleEntity.spawn(level, base, lean, total(), RISE, thick);
+            if (tentacle != null) tentacle.setDestroyer(owner);
             level.sendParticles(ParticleTypes.SQUID_INK, base.x, base.y + 0.2, base.z, 25, 0.8, 0.1, 0.8, 0.08);
             level.sendParticles(ParticleTypes.SCULK_SOUL, base.x, base.y + 0.2, base.z, 8, 0.6, 0.1, 0.6, 0.06);
             level.sendParticles(ShadowFx.GREEN, base.x, base.y + 0.3, base.z, 20, 0.7, 0.4, 0.7, 0);

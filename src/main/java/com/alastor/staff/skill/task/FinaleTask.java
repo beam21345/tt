@@ -72,7 +72,7 @@ public class FinaleTask implements SkillTask {
                 Vec3 root = new Vec3(p.x, g != null ? g : center.y, p.z);
                 TentacleEntity t = TentacleEntity.spawn(level, root, v.position().add(0, v.getBbHeight() * 0.5, 0).subtract(root),
                         SQUEEZE_END - GRAB + 12, 4, 2.4f);
-                if (t != null) grabbers.add(t);
+                if (t != null) { t.setDestroyer(owner); grabbers.add(t); }
                 debris(level, root, 30);
             }
             // a ring of colossal tentacles around the sigil
@@ -84,7 +84,7 @@ public class FinaleTask implements SkillTask {
                 Vec3 root = new Vec3(p.x, g, p.z);
                 Vec3 tip = new Vec3(-Math.cos(a) * 3, 22 + (k % 3) * 2, -Math.sin(a) * 3);
                 TentacleEntity t = TentacleEntity.spawn(level, root, tip, SQUEEZE_END - GRAB + 14, 8, 3.3f);
-                if (t != null) { ring.add(t); ringStart.add(tip); }
+                if (t != null) { t.setDestroyer(owner); ring.add(t); ringStart.add(tip); }
                 debris(level, root, 40);
             }
             ModSounds.play(level, center, ModSounds.TENTACLE_BURST, 3.0f, 0.6f);
