@@ -57,4 +57,3 @@
 ไฟล์ `config/alastorstaff-common.toml`
 - `tentaclesBreakBlocks` เปิด/ปิดให้หนวดทำลายบล็อก
 - `maxHardness` ความแข็งสูงสุดของบล็อกที่ทำลายได้ (ค่าเริ่มต้น 3 = หิน/แร่ทั่วไป)
-- `dropBrokenBlocks` บล็อกที่พังดรอปเป็นไอเทมหรือไม่

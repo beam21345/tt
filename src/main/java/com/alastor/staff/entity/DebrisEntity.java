@@ -31,6 +31,10 @@ public class DebrisEntity extends Entity {
     private static int alive;
     private static final int MAX_ALIVE = 160;
 
+    /** Tick it came to rest on the ground (both sides work it out), or -1 while still flying. */
+    public int landedAt = -1;
+    public static final int VANISH_TICKS = 6;
+
     public DebrisEntity(EntityType<? extends DebrisEntity> type, Level level) {
         super(type, level);
         this.noPhysics = true;
@@ -77,7 +81,10 @@ public class DebrisEntity extends Entity {
         }
         setDeltaMovement(v.scale(0.98));
         setPos(next.x, next.y, next.z);
-        if (!level().isClientSide && tickCount >= life()) discard();
+        // once it has come to rest it crumbles away almost at once – nothing is left lying around
+        if (landedAt < 0 && tickCount > 3 && v.lengthSqr() < 0.004) landedAt = tickCount;
+        boolean gone = tickCount >= life() || (landedAt >= 0 && tickCount >= landedAt + VANISH_TICKS);
+        if (!level().isClientSide && gone) discard();
     }
 
     @Override

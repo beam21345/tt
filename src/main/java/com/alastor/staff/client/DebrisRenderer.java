@@ -22,7 +22,8 @@ public class DebrisRenderer extends EntityRenderer<DebrisEntity> {
     public void render(DebrisEntity e, float yaw, float partialTick, PoseStack ps, MultiBufferSource buffers, int light) {
         float age = e.tickCount + partialTick;
         float left = e.life() - age;
-        float s = e.size() * Math.min(1f, Math.max(0f, left / 8f));
+        if (e.landedAt >= 0) left = Math.min(left, e.landedAt + DebrisEntity.VANISH_TICKS - age);
+        float s = e.size() * Math.min(1f, Math.max(0f, left / DebrisEntity.VANISH_TICKS));
         if (s <= 0.01f) return;
         boolean moving = e.getDeltaMovement().lengthSqr() > 1.0E-3;
         float spin = moving ? age : Math.min(age, e.life() * 0.4f);

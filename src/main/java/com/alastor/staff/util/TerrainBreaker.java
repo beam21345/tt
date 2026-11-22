@@ -37,12 +37,11 @@ public final class TerrainBreaker {
                 for (int dz = -r; dz <= r; dz++)
                     if (dx * dx + dy * dy + dz * dz <= radius * radius) list.add(c.offset(dx, dy, dz));
         list.sort((a, b) -> Double.compare(a.distToCenterSqr(at), b.distToCenterSqr(at)));
-        boolean drop = StaffConfig.DROP_BROKEN_BLOCKS.get();
         for (BlockPos pos : list) {
             if (broken >= max) break;
             BlockState st = level.getBlockState(pos);
             if (!canBreak(level, owner, pos, st)) continue;
-            level.destroyBlock(pos, drop, owner);   // vanilla break sound + crumble particles
+            level.destroyBlock(pos, false, owner);   // shatter only: break sound + crumble particles, never item drops
             level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, st), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
                     14, 0.35, 0.35, 0.35, 0.25);
             // chunks of the block fly off away from the blow
