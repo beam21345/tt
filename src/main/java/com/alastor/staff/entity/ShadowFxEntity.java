@@ -101,7 +101,58 @@ public class ShadowFxEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if (!level().isClientSide && this.tickCount >= life()) this.discard();
+        if (level().isClientSide) clientFx();
+        else if (this.tickCount >= life()) this.discard();
+    }
+
+    /** Lodestone glow for each kind of effect (client only). */
+    private void clientFx() {
+        Level level = level();
+        net.minecraft.util.RandomSource r = random;
+        float age = tickCount;
+        float g = Math.min(1f, age / grow());
+        float size = size();
+        if (life() - age < 4) return;
+        switch (variant()) {
+            case PILLAR -> {
+                float h = (12f + size * 7f) * g;
+                for (int i = 0; i < 2 + (int) size; i++) {
+                    double a = r.nextDouble() * Math.PI * 2, rr = size * (0.3 + r.nextDouble() * 0.9);
+                    com.alastor.staff.fx.LodestoneFx.glow(level, getX() + Math.cos(a) * rr, getY() + r.nextDouble() * h, getZ() + Math.sin(a) * rr,
+                            0.4f + size * 0.25f, 18, 0.1, 0.12 + size * 0.03);
+                }
+                if (tickCount % 3 == 0) com.alastor.staff.fx.LodestoneFx.twinkle(level, getX(), getY() + r.nextDouble() * h, getZ(), 0.3f + size * 0.1f, size);
+            }
+            case RING -> {
+                if (g < 1f) {
+                    float rr = size * (1f - (1f - g) * (1f - g) * (1f - g));
+                    int n = (int) Math.min(18, 4 + rr * 0.8f);
+                    for (int i = 0; i < n; i++) {
+                        double a = r.nextDouble() * Math.PI * 2;
+                        com.alastor.staff.fx.LodestoneFx.glow(level, getX() + Math.cos(a) * rr, getY() + 0.3, getZ() + Math.sin(a) * rr, 0.45f, 10, 0.15, 0.04);
+                    }
+                }
+            }
+            case BOLT -> {
+                if (tickCount == 1) {
+                    com.alastor.staff.fx.LodestoneFx.sparks(level, getX() + ex(), getY() + ey(), getZ() + ez(), 6, 0.2f, red());
+                    com.alastor.staff.fx.LodestoneFx.glow(level, getX() + ex(), getY() + ey(), getZ() + ez(), 0.9f, 8, 0.1, 0);
+                }
+            }
+            case SHADOW -> {
+                if (tickCount % 4 == 0) {
+                    double a = r.nextDouble() * Math.PI * 2, rr = Math.sqrt(r.nextDouble()) * size * g * 0.8;
+                    com.alastor.staff.fx.LodestoneFx.shadowSmoke(level, getX() + Math.cos(a) * rr, getY() + 0.1, getZ() + Math.sin(a) * rr, 0.6f + size * 0.05f, 0.2);
+                }
+            }
+            case SIGIL -> {
+                if (tickCount % 2 == 0) {
+                    double a = r.nextDouble() * Math.PI * 2, rr = size * g * (0.4 + r.nextDouble() * 0.6);
+                    com.alastor.staff.fx.LodestoneFx.twinkle(level, getX() + Math.cos(a) * rr, getY() + 0.15, getZ() + Math.sin(a) * rr, 0.25f, 0.05);
+                }
+            }
+            default -> {}
+        }
     }
 
     @Override

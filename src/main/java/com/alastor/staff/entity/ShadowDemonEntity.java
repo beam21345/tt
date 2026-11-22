@@ -142,6 +142,18 @@ public class ShadowDemonEntity extends PathfinderMob {
     @Override
     public void tick() {
         super.tick();
+        if (this.level().isClientSide && this.isAlive()) {
+            float sz = getDemonSize();
+            if (tickCount % 3 == 0) {
+                com.alastor.staff.fx.LodestoneFx.shadowSmoke(level(), getX(), getY() + 0.2 * sz, getZ(), 0.5f * sz, 0.35 * sz);
+            }
+            if (tickCount % 5 == 0) {
+                // faint green glow trailing from the eyes
+                double yaw = Math.toRadians(yBodyRot);
+                com.alastor.staff.fx.LodestoneFx.glow(level(), getX() - Math.sin(yaw) * 0.35 * sz, getY() + getBbHeight() * 0.82,
+                        getZ() + Math.cos(yaw) * 0.35 * sz, 0.18f * sz, 10, 0.05, 0.01);
+            }
+        }
         if (this.level() instanceof ServerLevel sl) {
             if (--life <= 0 && this.isAlive()) {
                 this.kill(); // dissolves via tickDeath

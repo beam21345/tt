@@ -28,10 +28,12 @@ jobs:
           repositories {
               maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
               maven { url 'https://maven.kosmx.dev/' }
+              maven { url 'https://maven.blamejared.com/' }
           }
           dependencies {
               implementation fg.deobf("software.bernie.geckolib:geckolib-forge-1.20.1:4.4.9")
               implementation fg.deobf("dev.kosmx.player-anim:player-animation-lib-forge:1.0.2-rc1+1.20")
+              implementation fg.deobf("team.lodestar.lodestone:lodestone:1.20.1-1.6.4.1.257") { transitive = false }
           }
           GRADLE
           echo "MDK_DIR=$MDK_DIR" >> "$GITHUB_ENV"

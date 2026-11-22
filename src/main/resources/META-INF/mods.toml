@@ -39,3 +39,10 @@ Right-click: use skill. Sneak + right-click: switch skill.
     versionRange="[1.0.0,)"
     ordering="AFTER"
     side="BOTH"
+
+[[dependencies.alastorstaff]]
+    modId="lodestone"
+    mandatory=true
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"

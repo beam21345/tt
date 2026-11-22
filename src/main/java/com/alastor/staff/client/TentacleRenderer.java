@@ -24,8 +24,8 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /**
- * Glossy pure-black shadow tentacle. Built from many short segments, each an octagonal prism
- * (two cubes twisted 45°), following a curve with a wave travelling up the body and a curling tip.
+ * Glossy pure-black shadow tentacle: a smooth round tube following a spring-simulated spine
+ * (so it moves with weight and its tip whips), with a wave travelling up the body and a curling tip.
  * Only the ground under it glows green while it bursts out.
  */
 public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
@@ -36,7 +36,9 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
     private static final ResourceLocation SHADOW = new ResourceLocation(AlastorStaffMod.MODID, "textures/fx/shadow.png");
     private static final ResourceLocation WEAPON_TEX = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/weapon.png");
     private static final ResourceLocation WEAPON_GLOW = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/weapon_glow.png");
-    private static final int SEGMENTS = 30;
+    private static final int SEGMENTS = TentacleEntity.SEGMENTS;
+    private static final int SIDES = 12;
+    private static final ResourceLocation TUBE_TEX = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/tentacle_tube.png");
 
     private final ModelPart segment;
     private final ModelPart tipPart;
@@ -87,66 +89,17 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
     public void render(TentacleEntity e, float entityYaw, float partialTick, PoseStack ps, MultiBufferSource buffers, int light) {
         float age = e.tickCount + partialTick;
         float ext = e.extension(age);
-        if (ext <= 0.01f) return;
-
-        Vector3f tip = new Vector3f(e.lerpTipX(partialTick), e.lerpTipY(partialTick), e.lerpTipZ(partialTick));
-        float len = tip.length();
-        if (len < 0.05f) return;
-        Vector3f dir = new Vector3f(tip).div(len);
-        Vector3f side = new Vector3f(dir).cross(0, 1, 0);
-        if (side.lengthSquared() < 1.0E-4f) side.set(1, 0, 0);
-        side.normalize();
-        Vector3f side2 = new Vector3f(dir).cross(side).normalize();
-
-        float phase = e.phase();
+        if (ext <= 0.01f || !e.hasSpine()) return;
         float thick = e.thickness();
-        float amp = Math.min(1.8f, 0.13f * len);
-        float curl = Math.min(2.2f, 0.16f * len);
-        float reach = len * ext;
 
-        // Centre line: a wave travels from root to tip, the last quarter curls over like a hook.
+        // spine points from the spring simulation (weighted, whipping motion)
         Vector3f[] pts = new Vector3f[SEGMENTS + 1];
         for (int i = 0; i <= SEGMENTS; i++) {
-            float s = (float) i / SEGMENTS;
-            float env = (float) Math.pow(s, 1.3);
-            float wave = (float) Math.sin(s * Math.PI * 2.0 - age * 0.22 + phase) * amp * env;
-            float wave2 = (float) Math.cos(s * Math.PI * 1.4 - age * 0.15 + phase * 1.7) * amp * 0.6f * env;
-            float hook = s > 0.7f ? (float) Math.pow((s - 0.7f) / 0.3f, 2) : 0f;
-            float curlNow = curl * hook * (0.75f + 0.25f * (float) Math.sin(age * 0.12 + phase));
-            pts[i] = new Vector3f(dir).mul(reach * s - curlNow * 0.35f * hook)
-                    .add(new Vector3f(side).mul(wave + curlNow))
-                    .add(new Vector3f(side2).mul(wave2));
+            pts[i] = new Vector3f(e.spineX(i, partialTick), e.spineY(i, partialTick), e.spineZ(i, partialTick));
         }
+        if (new Vector3f(pts[SEGMENTS]).lengthSquared() < 0.01f) return;
 
-        VertexConsumer vc = buffers.getBuffer(RenderType.entityCutoutNoCull(TEX));
-        for (int i = 0; i < SEGMENTS; i++) {
-            Vector3f a = pts[i];
-            Vector3f d = new Vector3f(pts[i + 1]).sub(a);
-            float segLen = d.length();
-            if (segLen < 1.0E-4f) continue;
-            d.div(segLen);
-            float s = (float) i / SEGMENTS;
-            // thick muscular root, long elegant taper, a slow pulse running up the body
-            float taper = 1.0f - 0.82f * (float) Math.pow(s, 0.85);
-            float pulse = 1.0f + 0.08f * (float) Math.sin(i * 0.9f - age * 0.4f);
-            float w = thick * taper * pulse;
-
-            ps.pushPose();
-            ps.translate(a.x, a.y, a.z);
-            ps.mulPose(new Quaternionf().rotationTo(0f, 1f, 0f, d.x, d.y, d.z));
-            if (i == SEGMENTS - 1) {
-                ps.scale(w * 1.15f, segLen * 1.7f, w * 1.15f);
-                tipPart.render(ps, vc, light, OverlayTexture.NO_OVERLAY);
-                ps.mulPose(Axis.YP.rotationDegrees(45f));
-                tipPart.render(ps, vc, light, OverlayTexture.NO_OVERLAY);
-            } else {
-                ps.scale(w, segLen * 1.15f, w);
-                segment.render(ps, vc, light, OverlayTexture.NO_OVERLAY);
-                ps.mulPose(Axis.YP.rotationDegrees(45f)); // second cube twisted 45° = rounded octagon
-                segment.render(ps, vc, light, OverlayTexture.NO_OVERLAY);
-            }
-            ps.popPose();
-        }
+        tube(ps, buffers.getBuffer(RenderType.entityCutoutNoCull(TUBE_TEX)), pts, thick, age, light);
 
         // weapon carried at the tip, aligned with the last segment
         int weapon = e.weapon();
@@ -178,6 +131,68 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
             groundPool(ps, buffers.getBuffer(RenderType.entityTranslucent(POOL)), r * 0.8f, glow * 0.45f);
         }
         super.render(e, entityYaw, partialTick, ps, buffers, light);
+    }
+
+    /**
+     * Smooth round tube along the spine: rings of vertices carried along with parallel-transport
+     * frames (so it never twists), thick root, long taper to a fine point, a pulse running up it.
+     */
+    private static void tube(PoseStack ps, VertexConsumer vc, Vector3f[] pts, float thick, float age, int light) {
+        int n = pts.length;
+        Vector3f[] ringPos = new Vector3f[n];
+        Vector3f[] nrm = new Vector3f[n];
+        Vector3f[] bin = new Vector3f[n];
+        float[] radius = new float[n];
+
+        Vector3f t0 = new Vector3f(pts[1]).sub(pts[0]);
+        if (t0.lengthSquared() < 1.0E-8f) t0.set(0, 1, 0);
+        t0.normalize();
+        Vector3f ref = Math.abs(t0.y) < 0.9f ? new Vector3f(0, 1, 0) : new Vector3f(1, 0, 0);
+        Vector3f prevN = new Vector3f(ref).cross(t0).normalize();
+        for (int i = 0; i < n; i++) {
+            Vector3f t = new Vector3f(pts[Math.min(n - 1, i + 1)]).sub(pts[Math.max(0, i - 1)]);
+            if (t.lengthSquared() < 1.0E-8f) t.set(t0);
+            t.normalize();
+            Vector3f nn = new Vector3f(prevN).sub(new Vector3f(t).mul(prevN.dot(t)));
+            if (nn.lengthSquared() < 1.0E-8f) nn.set(new Vector3f(ref).cross(t));
+            nn.normalize();
+            prevN = nn;
+            nrm[i] = nn;
+            bin[i] = new Vector3f(t).cross(nn).normalize();
+            float s = (float) i / (n - 1);
+            float taper = 1.0f - 0.88f * (float) Math.pow(s, 0.8);   // thick root, long taper
+            if (s > 0.9f) taper *= (1f - s) / 0.1f;                     // closing to a sharp point
+            float pulse = 1.0f + 0.07f * (float) Math.sin(i * 0.8f - age * 0.4f);
+            radius[i] = Math.max(0.01f, thick * 0.55f * taper * pulse);
+            ringPos[i] = pts[i];
+        }
+        // sink the root a little into the shadow so it seems to come from below
+        ringPos[0] = new Vector3f(pts[0]).sub(new Vector3f(pts[1]).sub(pts[0]).normalize().mul(0.4f));
+
+        PoseStack.Pose pose = ps.last();
+        Matrix4f m = pose.pose();
+        Matrix3f nm = pose.normal();
+        for (int i = 0; i < n - 1; i++) {
+            float v0 = (float) i / (n - 1), v1 = (float) (i + 1) / (n - 1);
+            for (int j = 0; j < SIDES; j++) {
+                float a0 = (float) (Math.PI * 2 * j / SIDES), a1 = (float) (Math.PI * 2 * (j + 1) / SIDES);
+                float u0 = (float) j / SIDES, u1 = (float) (j + 1) / SIDES;
+                tubeVertex(vc, m, nm, ringPos[i], nrm[i], bin[i], radius[i], a0, u0, v0, light);
+                tubeVertex(vc, m, nm, ringPos[i + 1], nrm[i + 1], bin[i + 1], radius[i + 1], a0, u0, v1, light);
+                tubeVertex(vc, m, nm, ringPos[i + 1], nrm[i + 1], bin[i + 1], radius[i + 1], a1, u1, v1, light);
+                tubeVertex(vc, m, nm, ringPos[i], nrm[i], bin[i], radius[i], a1, u1, v0, light);
+            }
+        }
+    }
+
+    private static void tubeVertex(VertexConsumer vc, Matrix4f m, Matrix3f nm, Vector3f c, Vector3f n, Vector3f b,
+                                   float r, float a, float u, float v, int light) {
+        float cx = (float) Math.cos(a), sx = (float) Math.sin(a);
+        float ox = n.x * cx + b.x * sx, oy = n.y * cx + b.y * sx, oz = n.z * cx + b.z * sx;
+        vc.vertex(m, c.x + ox * r, c.y + oy * r, c.z + oz * r)
+                .color(1f, 1f, 1f, 1f).uv(u, v)
+                .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light)
+                .normal(nm, ox, oy, oz).endVertex();
     }
 
     private static void groundPool(PoseStack ps, VertexConsumer vc, float r, float alpha) {

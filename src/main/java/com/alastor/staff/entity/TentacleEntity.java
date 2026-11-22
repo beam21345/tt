@@ -34,9 +34,15 @@ public class TentacleEntity extends Entity {
 
     public static final int FALL_TICKS = 7;
 
+    /** Number of segments along the tentacle's spine. */
+    public static final int SEGMENTS = 30;
+
     // client-side smoothing of the tip between server updates
     private float prevTipX, prevTipY, prevTipZ, curTipX, curTipY, curTipZ;
     private boolean tipInit;
+    // client-side spring chain: each spine point chases its target shape with some lag, so the
+    // tentacle moves with weight – the root leads, the tip follows through and whips
+    private float[] simCur, simPrev, simVel, target;
 
     public TentacleEntity(EntityType<? extends TentacleEntity> type, Level level) {
         super(type, level);
@@ -130,6 +136,107 @@ public class TentacleEntity extends Entity {
         return Math.max(0f, 1f - (age - rise) / 12f);
     }
 
+    /**
+     * The shape the tentacle wants to have at {@code age}: a wave travelling from root to tip and a
+     * hooked, curling tip. Writes SEGMENTS+1 points (x,y,z relative to the root) into {@code out}.
+     */
+    private void targetCurve(float age, float tx, float ty, float tz, float[] out) {
+        float len = (float) Math.sqrt(tx * tx + ty * ty + tz * tz);
+        float ext = extension(age);
+        if (len < 0.05f) { java.util.Arrays.fill(out, 0f); return; }
+        float dx = tx / len, dy = ty / len, dz = tz / len;
+        // side = dir x up, side2 = dir x side
+        float sx = -dz, sy = 0, sz = dx;
+        float sl = (float) Math.sqrt(sx * sx + sz * sz);
+        if (sl < 1.0E-3f) { sx = 1; sz = 0; sl = 1; }
+        sx /= sl; sz /= sl;
+        float s2x = dy * sz - dz * sy, s2y = dz * sx - dx * sz, s2z = dx * sy - dy * sx;
+        float phase = phase();
+        float amp = Math.min(1.8f, 0.13f * len);
+        float curl = Math.min(2.2f, 0.16f * len);
+        float reach = len * ext;
+        for (int i = 0; i <= SEGMENTS; i++) {
+            float s = (float) i / SEGMENTS;
+            float env = (float) Math.pow(s, 1.3);
+            float wave = (float) Math.sin(s * Math.PI * 2.0 - age * 0.22 + phase) * amp * env;
+            float wave2 = (float) Math.cos(s * Math.PI * 1.4 - age * 0.15 + phase * 1.7) * amp * 0.6f * env;
+            float hook = s > 0.7f ? (float) Math.pow((s - 0.7f) / 0.3f, 2) : 0f;
+            float curlNow = curl * hook * (0.75f + 0.25f * (float) Math.sin(age * 0.12 + phase));
+            float along = reach * s - curlNow * 0.35f * hook;
+            float side = wave + curlNow;
+            out[i * 3] = dx * along + sx * side + s2x * wave2;
+            out[i * 3 + 1] = dy * along + sy * side + s2y * wave2;
+            out[i * 3 + 2] = dz * along + sz * side + s2z * wave2;
+        }
+    }
+
+    private void clientSim() {
+        int n = (SEGMENTS + 1) * 3;
+        if (simCur == null) {
+            simCur = new float[n]; simPrev = new float[n]; simVel = new float[n]; target = new float[n];
+            targetCurve(tickCount, curTipX, curTipY, curTipZ, target);
+            System.arraycopy(target, 0, simCur, 0, n);
+            System.arraycopy(target, 0, simPrev, 0, n);
+            return;
+        }
+        System.arraycopy(simCur, 0, simPrev, 0, n);
+        targetCurve(tickCount, curTipX, curTipY, curTipZ, target);
+        for (int i = 0; i <= SEGMENTS; i++) {
+            float s = (float) i / SEGMENTS;
+            float k = 0.7f - 0.45f * s;      // stiff root, loose tip
+            for (int c = 0; c < 3; c++) {
+                int idx = i * 3 + c;
+                if (i == 0) { simCur[idx] = target[idx]; simVel[idx] = 0; continue; }
+                float v = simVel[idx] * 0.62f + (target[idx] - simCur[idx]) * k;
+                simVel[idx] = v;
+                simCur[idx] += v;
+            }
+        }
+    }
+
+    /** Interpolated spine point i (relative to the root) for rendering; null before the first client tick. */
+    public boolean hasSpine() { return simCur != null; }
+    public float spineX(int i, float pt) { return simPrev[i * 3] + (simCur[i * 3] - simPrev[i * 3]) * pt; }
+    public float spineY(int i, float pt) { return simPrev[i * 3 + 1] + (simCur[i * 3 + 1] - simPrev[i * 3 + 1]) * pt; }
+    public float spineZ(int i, float pt) { return simPrev[i * 3 + 2] + (simCur[i * 3 + 2] - simPrev[i * 3 + 2]) * pt; }
+
+    private Vec3 spineWorld(float[] arr, int i) {
+        return position().add(arr[i * 3], arr[i * 3 + 1], arr[i * 3 + 2]);
+    }
+
+    /** Glow, smoke and motion streaks (Lodestone), client side only. */
+    private void clientFx() {
+        if (simCur == null) return;
+        Level level = level();
+        float th = thickness();
+        int rise = entityData.get(RISE);
+        if (tickCount <= rise + 2) {
+            for (int k = 0; k < 3; k++) {
+                com.alastor.staff.fx.LodestoneFx.glow(level, getX(), getY() + 0.2, getZ(), 0.35f + 0.35f * th, 14, 0.4 * th, 0.03);
+            }
+            if (tickCount == 1) com.alastor.staff.fx.LodestoneFx.sparks(level, getX(), getY() + 0.3, getZ(), 8, 0.18f, false);
+        }
+        if (extension(tickCount) > 0.3f) {
+            if (tickCount % 3 == 0) {
+                int i = 2 + random.nextInt(Math.max(1, SEGMENTS / 2));
+                Vec3 p = spineWorld(simCur, i);
+                com.alastor.staff.fx.LodestoneFx.shadowSmoke(level, p.x, p.y, p.z, 0.35f + 0.3f * th, 0.2 * th);
+            }
+            if (tickCount % 6 == 0) com.alastor.staff.fx.LodestoneFx.shadowSmoke(level, getX(), getY() + 0.1, getZ(), 0.5f + 0.4f * th, 0.6 * th);
+            // fast swings leave a streak behind the tip (or the weapon's edge)
+            Vec3 a = spineWorld(simPrev, SEGMENTS), b = spineWorld(simCur, SEGMENTS);
+            if (a.distanceToSqr(b) > 0.25) {
+                if (weapon() != PLAIN) {
+                    Vec3 da = a.subtract(spineWorld(simPrev, SEGMENTS - 2)).normalize();
+                    Vec3 db = b.subtract(spineWorld(simCur, SEGMENTS - 2)).normalize();
+                    double reach = th * 2.3 * 1.25;
+                    com.alastor.staff.fx.LodestoneFx.streak(level, a.add(da.scale(reach)), b.add(db.scale(reach)), 0.25f * th, false);
+                }
+                com.alastor.staff.fx.LodestoneFx.streak(level, a, b, 0.2f + 0.15f * th, true);
+            }
+        }
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -143,6 +250,8 @@ public class TentacleEntity extends Entity {
             curTipX += (tipX() - curTipX) * 0.6f;
             curTipY += (tipY() - curTipY) * 0.6f;
             curTipZ += (tipZ() - curTipZ) * 0.6f;
+            clientSim();
+            clientFx();
         }
         if (!level().isClientSide && this.tickCount == 1 && level() instanceof net.minecraft.server.level.ServerLevel sl) {
             sl.sendParticles(com.alastor.staff.fx.ShadowFx.GREEN, getX(), getY() + 0.2, getZ(), 14, 0.45, 0.15, 0.45, 0);
