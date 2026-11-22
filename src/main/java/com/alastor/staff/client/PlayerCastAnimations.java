@@ -66,6 +66,12 @@ public final class PlayerCastAnimations {
         String name = switch (anim) {
             case CastAnim.PLANT -> "cast_plant";
             case CastAnim.RAISE -> "cast_raise";
+            case CastAnim.SWEEP_R -> "combo_sweep_r";
+            case CastAnim.SWEEP_L -> "combo_sweep_l";
+            case CastAnim.SLAM -> "combo_slam";
+            case CastAnim.THRUST -> "combo_thrust";
+            case CastAnim.BURST -> "combo_burst";
+            case CastAnim.HURL -> "combo_hurl";
             default -> "cast_point";
         };
         KeyframeAnimation data = PlayerAnimationRegistry.getAnimation(new ResourceLocation(AlastorStaffMod.MODID, name));

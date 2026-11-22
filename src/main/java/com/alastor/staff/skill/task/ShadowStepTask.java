@@ -1,11 +1,9 @@
 package com.alastor.staff.skill.task;
 
 import com.alastor.staff.entity.ShadowFxEntity;
-import com.alastor.staff.entity.TentacleEntity;
 import com.alastor.staff.fx.ShadowFx;
 import com.alastor.staff.registry.ModSounds;
 import com.alastor.staff.util.Targeting;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -18,19 +16,22 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Shadow Step: the caster melts into the ground and races along it as a streak of darkness
- * (about 8 blocks per tick) to the destination, then erupts out of the shadow there.
+ * Shadow Step: a pool of darkness opens under the caster and swallows them; they glide along the
+ * ground as a living shadow (about 8 blocks per tick), leaving a fading trail of darkness, and rise
+ * out of a pool at the destination.
  */
 public class ShadowStepTask implements SkillTask {
     /** Players currently travelling as a shadow (they can't be hurt). */
     public static final Set<UUID> TRAVELLING = new HashSet<>();
     private static final double SPEED = 8.0;
+    private static final int SINK = 6, RISE = 6;
 
     private final Player p;
     private final Vec3 start;
     private final Vec3 dest;
     private final int steps;
     private Vec3 prev;
+    private double sinceTrail;
     private int age;
 
     public ShadowStepTask(Player p, Vec3 dest) {
@@ -41,6 +42,13 @@ public class ShadowStepTask implements SkillTask {
         this.prev = start;
     }
 
+    private void hold(Vec3 at) {
+        p.teleportTo(at.x, at.y, at.z);
+        p.setDeltaMovement(Vec3.ZERO);
+        p.fallDistance = 0;
+        p.hurtMarked = true;
+    }
+
     @Override
     public boolean tick(ServerLevel level) {
         if (p.isRemoved() || !p.isAlive() || p.level() != level) {
@@ -48,68 +56,70 @@ public class ShadowStepTask implements SkillTask {
             return true;
         }
         age++;
-        if (age == 1) {
-            TRAVELLING.add(p.getUUID());
-            p.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, steps + 2, 0, false, false));
-            ShadowFx.spread(level, start, 3.5f, 40, 3);
-            level.sendParticles(ParticleTypes.SQUID_INK, start.x, start.y + 0.6, start.z, 50, 0.4, 0.8, 0.4, 0.08);
-            level.sendParticles(ShadowFx.BLACK, start.x, start.y + 1, start.z, 50, 0.4, 0.9, 0.4, 0);
-            ModSounds.play(level, start, ModSounds.RADIO_STATIC, 0.8f, 1.4f);
-            ModSounds.play(level, start, ModSounds.TENTACLE_BURST, 0.9f, 1.3f);
+
+        // ---- sinking into the shadow
+        if (age <= SINK) {
+            if (age == 1) {
+                TRAVELLING.add(p.getUUID());
+                ShadowFx.spread(level, start, 2.6f, SINK + 30, SINK);
+                ModSounds.play(level, start, ModSounds.RADIO_STATIC, 0.7f, 0.6f);
+            }
+            if (age == SINK - 2) {
+                p.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, steps + SINK + RISE, 0, false, false));
+                for (int k = 0; k < 3; k++) ShadowFx.spread(level, start, 1.2f + k * 0.9f, 22, 2 + k * 2);
+                ModSounds.play(level, start, ModSounds.TENTACLE_BURST, 0.6f, 0.5f);
+            }
+            hold(start);
+            return false;
         }
 
-        // glide along the ground: horizontal interpolation, height follows the terrain
-        double f = Math.min(1.0, age / (double) steps);
-        Vec3 flat = start.add(dest.subtract(start).scale(f));
-        Double g = Targeting.findGround(level, flat.x, flat.y, flat.z, 8, 24);
-        Vec3 pos = f >= 1.0 ? dest : new Vec3(flat.x, g != null ? g : flat.y, flat.z);
+        // ---- gliding along the ground as a shadow
+        int g = age - SINK;
+        if (g <= steps) {
+            double f = Math.min(1.0, g / (double) steps);
+            Vec3 flat = start.add(dest.subtract(start).scale(f));
+            Double gy = Targeting.findGround(level, flat.x, flat.y, flat.z, 8, 24);
+            Vec3 pos = f >= 1.0 ? dest : new Vec3(flat.x, gy != null ? gy : flat.y, flat.z);
 
-        // the streak of darkness rushing behind
-        Vec3 d = pos.subtract(prev);
-        int n = (int) Math.max(2, d.length() / 0.8);
-        for (int i = 0; i <= n; i++) {
-            Vec3 q = prev.add(d.scale((double) i / n));
-            level.sendParticles(ShadowFx.BLACK, q.x, q.y + 0.5, q.z, 3, 0.3, 0.4, 0.3, 0);
-            if (i % 2 == 0) level.sendParticles(ParticleTypes.SQUID_INK, q.x, q.y + 0.15, q.z, 1, 0.3, 0.02, 0.3, 0.01);
-            if (i % 5 == 0) ShadowFx.spread(level, new Vec3(q.x, q.y, q.z), 1.6f, 30, 2);
+            // a trail of darkness that lingers and fades behind
+            Vec3 d = pos.subtract(prev);
+            double len = d.length();
+            for (double t = 1.3 - sinceTrail; t <= len; t += 1.3) {
+                Vec3 q = prev.add(d.scale(t / Math.max(1e-6, len)));
+                Double qg = Targeting.findGround(level, q.x, q.y + 1, q.z, 3, 6);
+                ShadowFx.spread(level, new Vec3(q.x, qg != null ? qg : q.y, q.z), 1.5f, 26, 2);
+                sinceTrail = len - t;
+            }
+            ShadowFx.spread(level, pos, 2.3f, 5, 1);   // the shadow itself, racing ahead
+            hold(pos);
+            prev = pos;
+            if (g == steps) {
+                ShadowFx.spread(level, dest, 3.2f, RISE + 40, RISE);
+                ModSounds.play(level, dest, ModSounds.RADIO_TUNE, 0.6f, 1.6f);
+            }
+            return false;
         }
-        level.sendParticles(ShadowFx.BLACK, pos.x, pos.y + 0.8, pos.z, 20, 0.5, 0.6, 0.5, 0);
-        if (age % 2 == 0) ShadowFx.zap(level, prev.add(0, 0.6, 0), pos.add(0, 0.6, 0), 4);
 
-        p.teleportTo(pos.x, pos.y, pos.z);
-        p.setDeltaMovement(Vec3.ZERO);
-        p.fallDistance = 0;
-        p.hurtMarked = true;
-        prev = pos;
-
-        if (f >= 1.0) {
-            arrive(level);
-            TRAVELLING.remove(p.getUUID());
+        // ---- rising out at the destination
+        hold(dest);
+        if (age >= SINK + steps + RISE) {
             p.removeEffect(MobEffects.INVISIBILITY);
+            TRAVELLING.remove(p.getUUID());
+            arrive(level);
             return true;
         }
         return false;
     }
 
     private void arrive(ServerLevel level) {
-        ShadowFx.spread(level, dest, 5f, 40, 3);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, dest, 1.0f, 18, 3, 0f);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, dest, 7f, 14, 8, 0f);
-        for (int k = 0; k < 4; k++) {
-            double a = k * Math.PI / 2 + 0.6;
-            Vec3 root = dest.add(Math.cos(a) * 1.8, 0, Math.sin(a) * 1.8);
-            TentacleEntity.spawn(level, root, new Vec3(Math.cos(a) * 1.4, 5, Math.sin(a) * 1.4), 18, 3, 1.0f);
-        }
-        level.sendParticles(ParticleTypes.SQUID_INK, dest.x, dest.y + 0.5, dest.z, 50, 0.8, 0.6, 0.8, 0.12);
-        ShadowFx.crackle(level, dest, 3, 3);
+        for (int k = 0; k < 3; k++) ShadowFx.spread(level, dest, 1.5f + k * 1.6f, 24, 2 + k * 2);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, dest, 6f, 12, 8, 0f);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(4), x -> Targeting.isValid(p, x))) {
             Targeting.hurt(p, e, 8f);
             Vec3 away = e.position().subtract(dest);
             away = new Vec3(away.x, 0, away.z);
             if (away.lengthSqr() > 1.0E-4) Targeting.launch(e, away.normalize().scale(1.4).add(0, 0.6, 0));
         }
-        level.playSound(null, dest.x, dest.y, dest.z, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT,
-                net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 0.5f);
-        ModSounds.play(level, dest, ModSounds.SHADOW_BOOM, 1.2f, 1.3f);
+        ModSounds.play(level, dest, ModSounds.SHADOW_BOOM, 1.0f, 1.4f);
     }
 }

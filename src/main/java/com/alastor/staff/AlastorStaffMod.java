@@ -23,6 +23,7 @@ public class AlastorStaffMod {
         ModEntities.ENTITIES.register(modBus);
         com.alastor.staff.registry.ModSounds.SOUNDS.register(modBus);
         com.alastor.staff.network.ModNetwork.register();
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.COMMON, StaffConfig.SPEC);
         modBus.addListener(this::onAttributes);
         modBus.addListener(this::onCreativeTab);
     }

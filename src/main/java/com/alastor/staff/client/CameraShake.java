@@ -25,6 +25,7 @@ public final class CameraShake {
         double dist = mc.player.position().distanceTo(source);
         float falloff = (float) Math.max(0.0, 1.0 - dist / range);
         trauma = Math.min(1f, trauma + strength * falloff);
+        RadioStaticOverlay.trigger(strength * falloff * 0.9f);
     }
 
     @SubscribeEvent

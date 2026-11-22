@@ -22,6 +22,22 @@ public final class ClientKeys {
     public static final KeyMapping SUMMON_STAFF = new KeyMapping("key.alastorstaff.summon_staff",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_V, "key.categories.alastorstaff");
 
+    private static long lastCombo;
+
+    /** Left-click with the staff = tentacle combo (sneak: rip up and hurl the ground) instead of a plain hit. */
+    @SubscribeEvent
+    public static void onAttackKey(net.minecraftforge.client.event.InputEvent.InteractionKeyMappingTriggered event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (!event.isAttack() || mc.player == null) return;
+        if (!(mc.player.getMainHandItem().getItem() instanceof AlastorStaffItem)) return;
+        event.setCanceled(true);
+        event.setSwingHand(false);
+        long now = mc.level != null ? mc.level.getGameTime() : 0;
+        if (now - lastCombo < 4) return;
+        lastCombo = now;
+        ModNetwork.CHANNEL.sendToServer(new com.alastor.staff.network.ComboPacket(mc.player.isShiftKeyDown()));
+    }
+
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;

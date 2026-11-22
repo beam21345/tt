@@ -1,0 +1,129 @@
+{
+ "name": "combo_slam",
+ "author": "Alastor Staff mod",
+ "emote": {
+  "isLoop": "false",
+  "beginTick": 0,
+  "endTick": 12,
+  "stopTick": 16,
+  "degrees": true,
+  "moves": [
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "turn": 0,
+    "body": {
+     "pitch": 0,
+     "yaw": 0
+    },
+    "rightArm": {
+     "pitch": -75,
+     "yaw": -10,
+     "roll": 0
+    },
+    "leftArm": {
+     "pitch": 0,
+     "yaw": 0,
+     "roll": 0
+    },
+    "head": {
+     "pitch": 0,
+     "yaw": 0
+    },
+    "rightLeg": {
+     "pitch": 0
+    },
+    "leftLeg": {
+     "pitch": 0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "OUTQUAD",
+    "turn": 0,
+    "body": {
+     "pitch": -15,
+     "yaw": 0
+    },
+    "rightArm": {
+     "pitch": -170,
+     "yaw": -5,
+     "roll": 0
+    },
+    "leftArm": {
+     "pitch": -150,
+     "yaw": 15,
+     "roll": 0
+    },
+    "head": {
+     "pitch": -12,
+     "yaw": 0
+    },
+    "rightLeg": {
+     "pitch": 5
+    },
+    "leftLeg": {
+     "pitch": -10
+    }
+   },
+   {
+    "tick": 7,
+    "easing": "INQUART",
+    "turn": 0,
+    "body": {
+     "pitch": 30,
+     "yaw": 0
+    },
+    "rightArm": {
+     "pitch": -40,
+     "yaw": -5,
+     "roll": 0
+    },
+    "leftArm": {
+     "pitch": -45,
+     "yaw": 20,
+     "roll": 0
+    },
+    "head": {
+     "pitch": 15,
+     "yaw": 0
+    },
+    "rightLeg": {
+     "pitch": -30
+    },
+    "leftLeg": {
+     "pitch": 25
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INOUTSINE",
+    "turn": 0,
+    "body": {
+     "pitch": 0,
+     "yaw": 0
+    },
+    "rightArm": {
+     "pitch": -75,
+     "yaw": -10,
+     "roll": 0
+    },
+    "leftArm": {
+     "pitch": 0,
+     "yaw": 0,
+     "roll": 0
+    },
+    "head": {
+     "pitch": 0,
+     "yaw": 0
+    },
+    "rightLeg": {
+     "pitch": 0
+    },
+    "leftLeg": {
+     "pitch": 0
+    }
+   }
+  ]
+ }
+}

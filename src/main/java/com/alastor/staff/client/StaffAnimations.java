@@ -136,7 +136,20 @@ public final class StaffAnimations implements IClientItemExtensions {
                     ps.translate(-i * 0.2f * (lift + slam), 0.3f * lift - 0.35f * slam, -0.15f * slam);
                     ps.mulPose(Axis.XP.rotationDegrees(-15f * slam));
                 }
-                case CastAnim.RAISE -> {
+                case CastAnim.SWEEP_R, CastAnim.SWEEP_L -> {
+                    float s = AlastorStaffItem.castAnim(stack) == CastAnim.SWEEP_R ? 1f : -1f;
+                    float sw = key(t, new float[]{0, 3, 7, 12}, new float[]{0, -1, 1, 0});
+                    ps.translate(i * 0.1f * sw * s, 0.05f * Math.abs(sw), 0);
+                    ps.mulPose(Axis.YP.rotationDegrees(i * 35f * sw * s));
+                    ps.mulPose(Axis.ZP.rotationDegrees(-i * 20f * sw * s));
+                }
+                case CastAnim.SLAM, CastAnim.THRUST, CastAnim.HURL -> {
+                    float up = key(t, new float[]{0, 4, 7, 14}, new float[]{0, 1, 0, 0});
+                    float hit = key(t, new float[]{0, 4, 7, 10, 14}, new float[]{0, 0, 1, 1, 0});
+                    ps.translate(0, 0.25f * up - 0.2f * hit, -0.2f * hit);
+                    ps.mulPose(Axis.XP.rotationDegrees(25f * up - 45f * hit));
+                }
+                case CastAnim.RAISE, CastAnim.BURST -> {
                     float up = key(t, new float[]{0, 6, 16, 20}, new float[]{0, 1, 1, 0});
                     ps.translate(-i * 0.15f * up, 0.4f * up, -0.1f * up);
                     ps.mulPose(Axis.ZP.rotationDegrees(-i * 12f * up));

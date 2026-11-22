@@ -25,6 +25,8 @@ public enum SkillType {
     /** Caster animations (shared with the client renderer). */
     public static final class CastAnim {
         public static final int POINT = 0, PLANT = 1, RAISE = 2;
+        /** Melee combo motions. */
+        public static final int SWEEP_R = 3, SWEEP_L = 4, SLAM = 5, THRUST = 6, BURST = 7, HURL = 8;
         private CastAnim() {}
     }
 

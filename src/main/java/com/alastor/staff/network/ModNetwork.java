@@ -18,6 +18,8 @@ public final class ModNetwork {
                 CycleSkillPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
         CHANNEL.registerMessage(1, SummonStaffPacket.class, SummonStaffPacket::encode, SummonStaffPacket::decode,
                 SummonStaffPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(2, ComboPacket.class, ComboPacket::encode, ComboPacket::decode,
+                ComboPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
     }
 
     private ModNetwork() {}

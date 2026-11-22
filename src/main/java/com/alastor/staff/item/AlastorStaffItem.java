@@ -202,9 +202,13 @@ public class AlastorStaffItem extends Item implements software.bernie.geckolib.a
             double yaw = Math.toRadians(entity.getYRot());
             double sx = entity.getX() - Math.cos(yaw) * 0.45 - Math.sin(yaw) * 0.3;
             double sz = entity.getZ() - Math.sin(yaw) * 0.45 + Math.cos(yaw) * 0.3;
-            level.addParticle(com.alastor.staff.fx.ShadowFx.GREEN_SMALL,
-                    sx + (level.random.nextDouble() - 0.5) * 0.3, entity.getY() + 1.6 + level.random.nextDouble() * 0.6,
-                    sz + (level.random.nextDouble() - 0.5) * 0.3, 0, 0.02, 0);
+            com.alastor.staff.fx.LodestoneFx.glow(level, sx, entity.getY() + 1.9 + level.random.nextDouble() * 0.4, sz,
+                    0.12f, 16, 0.15, 0.015);
+            if (isRadioOn(stack) && entity.tickCount % 2 == 0) {
+                double a = level.random.nextDouble() * Math.PI * 2;
+                com.alastor.staff.fx.LodestoneFx.glow(level, entity.getX() + Math.cos(a) * 7, entity.getY() + 0.2,
+                        entity.getZ() + Math.sin(a) * 7, 0.35f, 14, 0.2, 0.03);
+            }
         }
     }
 
@@ -239,5 +243,6 @@ public class AlastorStaffItem extends Item implements software.bernie.geckolib.a
             tooltip.add(Component.literal(" • ").append(Component.translatable("tooltip.alastorstaff.passive." + k)).withStyle(ChatFormatting.GRAY));
         }
         tooltip.add(Component.translatable("tooltip.alastorstaff.controls").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.alastorstaff.combo").withStyle(ChatFormatting.GRAY));
     }
 }

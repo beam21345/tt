@@ -38,6 +38,7 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
     private static final ResourceLocation WEAPON_GLOW = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/weapon_glow.png");
     private static final int SEGMENTS = TentacleEntity.SEGMENTS;
     private static final int SIDES = 12;
+    private static final ResourceLocation EDGE_GLOW = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/edge_glow.png");
     private static final ResourceLocation TUBE_TEX = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/tentacle_tube.png");
 
     private final ModelPart segment;
@@ -101,23 +102,29 @@ public class TentacleRenderer extends EntityRenderer<TentacleEntity> {
 
         tube(ps, buffers.getBuffer(RenderType.entityCutoutNoCull(TUBE_TEX)), pts, thick, age, light);
 
-        // weapon carried at the tip, aligned with the last segment
+        // organic weapon grown from the tip, same glossy skin as the tentacle, cutting edges glowing
         int weapon = e.weapon();
         if (weapon != TentacleEntity.PLAIN) {
-            ModelPart part = weapon == TentacleEntity.SWORD ? sword : weapon == TentacleEntity.AXE ? axe : spear;
             Vector3f end = pts[SEGMENTS];
-            Vector3f wd = new Vector3f(end).sub(pts[SEGMENTS - 2]);
+            Vector3f wd = new Vector3f(end).sub(pts[SEGMENTS - 3]);
             if (wd.lengthSquared() > 1.0E-6f) {
                 wd.normalize();
-                float k = Math.min(1f, ext) * thick * 2.3f; // giant: ~8 blocks long at thickness 2.2
+                float k = Math.min(1f, ext) * thick * 2.3f / 16f;
                 for (int pass = 0; pass < 2; pass++) {
-                    VertexConsumer wv = buffers.getBuffer(pass == 0 ? RenderType.entityCutoutNoCull(WEAPON_TEX) : RenderType.eyes(WEAPON_GLOW));
+                    VertexConsumer wv = buffers.getBuffer(pass == 0 ? RenderType.entityCutoutNoCull(TUBE_TEX) : RenderType.eyes(EDGE_GLOW));
                     ps.pushPose();
                     ps.translate(end.x, end.y, end.z);
                     ps.mulPose(new Quaternionf().rotationTo(0f, 1f, 0f, wd.x, wd.y, wd.z));
                     ps.mulPose(Axis.YP.rotation(e.phase()));
                     ps.scale(k, k, k);
-                    part.render(ps, wv, pass == 0 ? light : LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+                    Matrix4f wm = ps.last().pose();
+                    Matrix3f wn = ps.last().normal();
+                    boolean g = pass == 1;
+                    switch (weapon) {
+                        case TentacleEntity.SWORD -> WeaponMeshes.sword(wv, g, wm, wn, light);
+                        case TentacleEntity.AXE -> WeaponMeshes.axe(wv, g, wm, wn, light);
+                        default -> WeaponMeshes.spear(wv, g, wm, wn, light);
+                    }
                     ps.popPose();
                 }
             }

@@ -23,7 +23,7 @@ public class ShadowFxEntity extends Entity {
     /** Client-only bookkeeping: whether this effect already shook the camera. */
     public boolean clientShakeDone;
 
-    public static final int SIGIL = 0, RING = 1, RIFT = 2, DOMAIN = 3, PILLAR = 4, BOLT = 5, SHADOW = 6;
+    public static final int SIGIL = 0, RING = 1, RIFT = 2, DOMAIN = 3, PILLAR = 4, BOLT = 5, SHADOW = 6, ORB = 7;
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> SIZE = SynchedEntityData.defineId(ShadowFxEntity.class, EntityDataSerializers.FLOAT);
@@ -140,10 +140,15 @@ public class ShadowFxEntity extends Entity {
                 }
             }
             case SHADOW -> {
-                if (tickCount % 4 == 0) {
+                if (size >= 3f && tickCount % 5 == 0) {   // only big pools breathe out a little darkness
                     double a = r.nextDouble() * Math.PI * 2, rr = Math.sqrt(r.nextDouble()) * size * g * 0.8;
                     com.alastor.staff.fx.LodestoneFx.shadowSmoke(level, getX() + Math.cos(a) * rr, getY() + 0.1, getZ() + Math.sin(a) * rr, 0.6f + size * 0.05f, 0.2);
                 }
+            }
+            case ORB -> {
+                // light and darkness being dragged into the orb
+                float rr = size * g;
+                for (int i = 0; i < 4; i++) com.alastor.staff.fx.LodestoneFx.suck(level, position(), rr * 2.5f + 3f, i % 2 == 0);
             }
             case SIGIL -> {
                 if (tickCount % 2 == 0) {

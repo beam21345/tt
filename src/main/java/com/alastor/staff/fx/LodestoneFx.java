@@ -86,6 +86,25 @@ public final class LodestoneFx {
                 .spawn(level, x, y, z);
     }
 
+    /** A wisp (green glow or black shadow) drawn in toward {@code center} from {@code radius} away. */
+    public static void suck(Level level, Vec3 center, float radius, boolean glow) {
+        RandomSource r = level.getRandom();
+        double a = r.nextDouble() * Math.PI * 2, b = (r.nextDouble() - 0.5) * Math.PI;
+        Vec3 off = new Vec3(Math.cos(a) * Math.cos(b), Math.sin(b), Math.sin(a) * Math.cos(b)).scale(radius);
+        Vec3 from = center.add(off);
+        Vec3 vel = off.scale(-1.0 / 14);
+        WorldParticleBuilder.create(glow ? LodestoneParticleRegistry.WISP_PARTICLE : LodestoneParticleRegistry.SMOKE_PARTICLE)
+                .setRenderType(glow ? LodestoneWorldParticleRenderType.ADDITIVE : LodestoneWorldParticleRenderType.TRANSPARENT)
+                .setColorData(glow ? ColorParticleData.create(WHITE_GREEN, GREEN).build() : ColorParticleData.create(BLACK, BLACK).build())
+                .setTransparencyData(GenericParticleData.create(0.0f, glow ? 0.8f : 0.7f, 0.0f).build())
+                .setScaleData(GenericParticleData.create(glow ? 0.35f : 0.8f, glow ? 0.15f : 0.4f).build())
+                .setLifetime(14)
+                .setMotion(vel)
+                .setFullBrightLighting()
+                .enableNoClip()
+                .spawn(level, from.x, from.y, from.z);
+    }
+
     /** A ribbon of glowing particles from a to b (used for whipping tips and weapon edges). */
     public static void streak(Level level, Vec3 a, Vec3 b, float scale, boolean dark) {
         Vec3 d = b.subtract(a);

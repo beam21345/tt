@@ -27,6 +27,8 @@ public class ShadowFxRenderer extends EntityRenderer<ShadowFxEntity> {
     private static final ResourceLocation PILLAR = tex("pillar");
     private static final ResourceLocation POOL = tex("glow_pool");
     private static final ResourceLocation SHADOW = tex("shadow");
+    private static final ResourceLocation RIPPLE = tex("shadow_ripple");
+    private static final ResourceLocation RIM = tex("shadow_rim");
     private static final int FULL_BRIGHT = LightTexture.FULL_BRIGHT;
 
     public ShadowFxRenderer(EntityRendererProvider.Context ctx) {
@@ -130,19 +132,48 @@ public class ShadowFxRenderer extends EntityRenderer<ShadowFxEntity> {
                 flat(ps, buffers.getBuffer(RenderType.entityTranslucent(POOL)), r * 3f, alpha * pulse);
             }
             case ShadowFxEntity.SHADOW -> {
-                // spreading pool of darkness, two layers turning slowly so the edge seems to creep
+                // a living pool of darkness: inky core, a slower wobbling outer layer, ripples spreading
+                // outward across it, and a faint green light licking along the edge
                 ps.translate(0, (e.getId() % 9) * 0.003, 0);
                 float r = size * (0.15f + 0.85f * ease);
+                float spin = e.getId() * 0.7f;
                 ps.pushPose();
-                ps.mulPose(Axis.YP.rotation(age * 0.012f + e.getId()));
-                flat(ps, buffers.getBuffer(RenderType.entityTranslucent(SHADOW)), r * 1.08f, alpha * 0.55f);
+                ps.mulPose(Axis.YP.rotation(age * 0.01f + spin));
+                ps.scale(1f + 0.04f * (float) Math.sin(age * 0.21f), 1f, 1f + 0.04f * (float) Math.cos(age * 0.17f));
+                flat(ps, buffers.getBuffer(RenderType.entityTranslucent(SHADOW)), r * 1.12f, alpha * 0.5f);
                 ps.popPose();
-                ps.translate(0, 0.004, 0);
-                ps.mulPose(Axis.YP.rotation(-age * 0.02f + e.getId() * 0.7f));
-                flat(ps, buffers.getBuffer(RenderType.entityTranslucent(SHADOW)), r, alpha * 0.95f);
+                ps.translate(0, 0.003, 0);
+                ps.pushPose();
+                ps.mulPose(Axis.YP.rotation(-age * 0.018f + spin));
+                flat(ps, buffers.getBuffer(RenderType.entityTranslucent(SHADOW)), r, alpha);
+                ps.popPose();
+                ps.translate(0, 0.003, 0);
+                VertexConsumer rip = buffers.getBuffer(RenderType.entityTranslucent(RIPPLE));
+                for (int k = 0; k < 3; k++) {
+                    float ph = ((age * 0.035f + k / 3f + e.getId() * 0.13f) % 1f);
+                    flat(ps, rip, r * (0.25f + 0.8f * ph), alpha * (1f - ph) * 0.7f);
+                }
+                ps.translate(0, 0.003, 0);
+                ps.mulPose(Axis.YP.rotation(age * 0.03f + spin));
+                flat(ps, buffers.getBuffer(RenderType.entityTranslucent(RIM)), r, alpha * (0.35f + 0.15f * pulse));
+            }
+            case ShadowFxEntity.ORB -> {
+                // a sphere of pure darkness wrapped in a green aura
+                float r = size * ease * (1f + 0.06f * (float) Math.sin(age * 0.9f));
+                ps.translate(0, -0.03, 0);
+                sphere(ps, buffers.getBuffer(RenderType.entityCutoutNoCull(ORB_TEX)), r, age);
+                VertexConsumer halo = buffers.getBuffer(RenderType.entityTranslucent(POOL));
+                for (int k = 0; k < 3; k++) {
+                    ps.pushPose();
+                    if (k == 1) ps.mulPose(Axis.XP.rotationDegrees(90));
+                    if (k == 2) ps.mulPose(Axis.ZP.rotationDegrees(90));
+                    ps.mulPose(Axis.YP.rotation(age * 0.05f * (k + 1)));
+                    flat(ps, halo, r * 2.4f, alpha * 0.55f * pulse);
+                    ps.popPose();
+                }
             }
             case ShadowFxEntity.BOLT -> {
-                Random rnd = new Random(e.getId() * 341873128712L + (long) (age / 2));
+                Random rnd = new Random(e.getId() * 341873128712L + (long) age);   // re-jags every tick
                 float flicker = alpha * (0.65f + 0.35f * rnd.nextFloat());
                 VertexConsumer vc = buffers.getBuffer(RenderType.lightning());
                 bolt(ps.last().pose(), vc, new Vector3f(), new Vector3f(e.ex(), e.ey(), e.ez()), rnd, 0, e.red(), flicker);
@@ -155,7 +186,7 @@ public class ShadowFxRenderer extends EntityRenderer<ShadowFxEntity> {
 
     // ---------------- geometry helpers ----------------
 
-    /** Jagged lightning: glowing outer band + bright core, with a few side branches. */
+    /** Jagged lightning: wide soft halo, glowing band and white-hot core, tapered, with forking branches. */
     private static void bolt(Matrix4f m, VertexConsumer vc, Vector3f a, Vector3f b, Random rnd, int depth, boolean red, float alpha) {
         Vector3f d = new Vector3f(b).sub(a);
         float len = d.length();
@@ -165,29 +196,29 @@ public class ShadowFxRenderer extends EntityRenderer<ShadowFxEntity> {
         if (p1.lengthSquared() < 1.0E-4f) p1.set(1, 0, 0);
         p1.normalize();
         Vector3f p2 = new Vector3f(dir).cross(p1).normalize();
-        int n = Math.max(3, (int) (len / 0.7f));
-        float jag = Math.min(1.2f, len * 0.09f);
+        int n = Math.max(4, (int) (len / 0.45f));
+        float jag = Math.min(1.3f, len * 0.085f) * (depth == 0 ? 1f : 0.7f);
         Vector3f prev = new Vector3f(a);
-        float wGlow = (depth == 0 ? 0.32f : 0.18f), wCore = (depth == 0 ? 0.08f : 0.05f);
+        float scale = depth == 0 ? 1f : depth == 1 ? 0.55f : 0.32f;
+        float r1 = red ? 1.0f : 0.25f, g1 = red ? 0.12f : 1.0f, b1 = red ? 0.08f : 0.45f;
         for (int i = 1; i <= n; i++) {
-            Vector3f next = new Vector3f(dir).mul(len * i / n).add(a);
+            float f = (float) i / n;
+            Vector3f next = new Vector3f(dir).mul(len * f).add(a);
             if (i < n) {
-                next.add(new Vector3f(p1).mul((rnd.nextFloat() - 0.5f) * 2 * jag))
-                    .add(new Vector3f(p2).mul((rnd.nextFloat() - 0.5f) * 2 * jag));
+                float env = (float) Math.sin(f * Math.PI) * 0.6f + 0.4f;
+                next.add(new Vector3f(p1).mul((rnd.nextFloat() - 0.5f) * 2 * jag * env))
+                    .add(new Vector3f(p2).mul((rnd.nextFloat() - 0.5f) * 2 * jag * env));
             }
-            if (red) {
-                segment(m, vc, prev, next, wGlow, 1.0f, 0.15f, 0.1f, alpha * 0.55f);
-                segment(m, vc, prev, next, wCore, 1.0f, 0.75f, 0.7f, alpha);
-            } else {
-                segment(m, vc, prev, next, wGlow, 0.2f, 1.0f, 0.4f, alpha * 0.55f);
-                segment(m, vc, prev, next, wCore, 0.8f, 1.0f, 0.85f, alpha);
-            }
-            if (depth == 0 && i < n && rnd.nextFloat() < 0.28f) {
+            float taper = scale * (1f - 0.55f * f);
+            segment(m, vc, prev, next, 0.75f * taper, r1, g1, b1, alpha * 0.16f);              // soft halo
+            segment(m, vc, prev, next, 0.28f * taper, r1, g1, b1, alpha * 0.55f);              // glow
+            segment(m, vc, prev, next, 0.07f * taper, 0.92f, red ? 0.8f : 1.0f, 0.9f, alpha); // hot core
+            if (depth < 2 && i < n && rnd.nextFloat() < (depth == 0 ? 0.32f : 0.18f)) {
                 Vector3f branchEnd = new Vector3f(next)
-                        .add(new Vector3f(dir).mul(len * 0.15f))
-                        .add(new Vector3f(p1).mul((rnd.nextFloat() - 0.5f) * len * 0.5f))
-                        .add(new Vector3f(p2).mul((rnd.nextFloat() - 0.5f) * len * 0.5f));
-                bolt(m, vc, next, branchEnd, rnd, 1, red, alpha * 0.8f);
+                        .add(new Vector3f(dir).mul(len * 0.18f))
+                        .add(new Vector3f(p1).mul((rnd.nextFloat() - 0.5f) * len * 0.55f))
+                        .add(new Vector3f(p2).mul((rnd.nextFloat() - 0.5f) * len * 0.55f));
+                bolt(m, vc, next, branchEnd, rnd, depth + 1, red, alpha * 0.8f);
             }
             prev = next;
         }
@@ -209,6 +240,31 @@ public class ShadowFxRenderer extends EntityRenderer<ShadowFxEntity> {
             Vector3f[] quad = {a0, a1, b1, b0, b0, b1, a1, a0}; // front + back
             for (Vector3f v : quad) vc.vertex(m, v.x, v.y, v.z).color(r, g, bl, alpha).endVertex();
         }
+    }
+
+    private static final ResourceLocation ORB_TEX = new ResourceLocation(AlastorStaffMod.MODID, "textures/entity/tentacle_tube.png");
+
+    private static void sphere(PoseStack ps, VertexConsumer vc, float r, float age) {
+        PoseStack.Pose pose = ps.last();
+        Matrix4f m = pose.pose();
+        Matrix3f n = pose.normal();
+        int lat = 12, lon = 18;
+        for (int i = 0; i < lat; i++) {
+            double t0 = Math.PI * i / lat, t1 = Math.PI * (i + 1) / lat;
+            for (int j = 0; j < lon; j++) {
+                double p0 = Math.PI * 2 * j / lon + age * 0.02, p1 = Math.PI * 2 * (j + 1) / lon + age * 0.02;
+                sv(vc, m, n, r, t0, p0, (float) j / lon, (float) i / lat);
+                sv(vc, m, n, r, t1, p0, (float) j / lon, (float) (i + 1) / lat);
+                sv(vc, m, n, r, t1, p1, (float) (j + 1) / lon, (float) (i + 1) / lat);
+                sv(vc, m, n, r, t0, p1, (float) (j + 1) / lon, (float) i / lat);
+            }
+        }
+    }
+
+    private static void sv(VertexConsumer vc, Matrix4f m, Matrix3f n, float r, double t, double p, float u, float v) {
+        float x = (float) (Math.sin(t) * Math.cos(p)), y = (float) Math.cos(t), z = (float) (Math.sin(t) * Math.sin(p));
+        vc.vertex(m, x * r, y * r, z * r).color(1f, 1f, 1f, 1f).uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(0xF000F0).normal(n, x, y, z).endVertex();
     }
 
     private static void flat(PoseStack ps, VertexConsumer vc, float r, float alpha) {

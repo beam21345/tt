@@ -117,6 +117,7 @@ public class TentacleTask implements SkillTask {
         level.sendParticles(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK,
                 level.getBlockState(net.minecraft.core.BlockPos.containing(p.x, p.y - 0.5, p.z))), p.x, p.y + 0.3, p.z, 60, 2.0, 0.3, 2.0, 0.4);
         hit.clear();
+        com.alastor.staff.util.TerrainBreaker.smash(level, owner, p, 2.0, 10);
         hitBox(level, new AABB(p.x - 6, p.y - 1, p.z - 6, p.x + 6, p.y + 4, p.z + 6), damage * 0.8f, new Vec3(0, 0.7, 0));
     }
 

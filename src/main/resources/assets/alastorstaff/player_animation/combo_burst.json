@@ -1,0 +1,152 @@
+{
+ "name": "combo_burst",
+ "author": "Alastor Staff mod",
+ "emote": {
+  "isLoop": "false",
+  "beginTick": 0,
+  "endTick": 14,
+  "stopTick": 20,
+  "degrees": true,
+  "moves": [
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "turn": 0,
+    "body": {
+     "pitch": 0,
+     "yaw": 0
+    },
+    "rightArm": {
+     "pitch": -75,
+     "yaw": -10,
+     "roll": 0
+    },
+    "leftArm": {
+     "pitch": 0,
+     "yaw": 0,
+     "roll": 0
+    },
+    "head": {
+     "pitch": 0,
+     "yaw": 0
+    },
+    "rightLeg": {
+     "pitch": 0
+    },
+    "leftLeg": {
+     "pitch": 0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "OUTQUAD",
+    "turn": 0,
+    "body": {
+     "pitch": 20,
+     "yaw": 0
+    },
+    "rightArm": {
+     "pitch": -30,
+     "yaw": -10,
+     "roll": 10
+    },
+    "leftArm": {
+     "pitch": -30,
+     "yaw": 10,
+     "roll": -10
+    },
+    "head": {
+     "pitch": 20,
+     "yaw": 0
+    },
+    "rightLeg": {
+     "pitch": -20
+    },
+    "leftLeg": {
+     "pitch": 20
+    }
+   },
+   {
+    "tick": 7,
+    "easing": "OUTBACK",
+    "turn": 0,
+    "body": {
+     "pitch": -18,
+     "yaw": 0
+    },
+    "rightArm": {
+     "pitch": -170,
+     "yaw": 0,
+     "roll": 30
+    },
+    "leftArm": {
+     "pitch": -160,
+     "yaw": 0,
+     "roll": -45
+    },
+    "head": {
+     "pitch": -25,
+     "yaw": 0
+    },
+    "rightLeg": {
+     "pitch": 0
+    },
+    "leftLeg": {
+     "pitch": 0
+    }
+   },
+   {
+    "tick": 12,
+    "easing": "INOUTSINE",
+    "turn": 0,
+    "body": {
+     "pitch": -15,
+     "yaw": 0
+    },
+    "rightArm": {
+     "pitch": -165,
+     "yaw": 0,
+     "roll": 25
+    },
+    "leftArm": {
+     "pitch": -155,
+     "yaw": 0,
+     "roll": -40
+    },
+    "head": {
+     "pitch": -20,
+     "yaw": 0
+    }
+   },
+   {
+    "tick": 20,
+    "easing": "INOUTSINE",
+    "turn": 0,
+    "body": {
+     "pitch": 0,
+     "yaw": 0
+    },
+    "rightArm": {
+     "pitch": -75,
+     "yaw": -10,
+     "roll": 0
+    },
+    "leftArm": {
+     "pitch": 0,
+     "yaw": 0,
+     "roll": 0
+    },
+    "head": {
+     "pitch": 0,
+     "yaw": 0
+    },
+    "rightLeg": {
+     "pitch": 0
+    },
+    "leftLeg": {
+     "pitch": 0
+    }
+   }
+  ]
+ }
+}

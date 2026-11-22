@@ -32,5 +32,7 @@
   "tooltip.alastorstaff.passive.sight": "Shadow Sight - มองเห็นในที่มืดตอนถือคทา",
   "msg.alastorstaff.no_ground": "ตรงนั้นไม่มีพื้นให้ใช้สกิล",
   "key.alastorstaff.summon_staff": "เรียก / เก็บคทา",
-  "msg.alastorstaff.inventory_full": "ช่องเก็บของเต็ม เรียกคทาไม่ได้"
+  "msg.alastorstaff.inventory_full": "ช่องเก็บของเต็ม เรียกคทาไม่ได้",
+  "tooltip.alastorstaff.combo": "คลิกซ้าย: คอมโบหนวด 5 จังหวะ | ย่อ + คลิกซ้าย: ฉีกพื้นขึ้นมาปา",
+  "entity.alastorstaff.hurled_block": "ก้อนดินที่ถูกปา"
 }

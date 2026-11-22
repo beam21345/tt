@@ -164,6 +164,7 @@ public class WeaponStrikeTask implements SkillTask {
         level.sendParticles(ParticleTypes.SQUID_INK, p.x, p.y + 0.3, p.z, 40, radius * 0.6, 0.2, radius * 0.6, 0.15);
         level.sendParticles(ParticleTypes.EXPLOSION, p.x, p.y + 0.5, p.z, heavy ? 3 : 1, radius * 0.4, 0.2, radius * 0.4, 0);
         if (heavy) ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, p, 2.2f, 20, 4, 0f);
+        com.alastor.staff.util.TerrainBreaker.smash(level, owner, p.add(0, 0.5, 0), heavy ? 2.6 : 1.8, heavy ? 18 : 10);
         ModSounds.play(level, p, ModSounds.SHADOW_BOOM, heavy ? 2.0f : 1.4f, heavy ? 0.8f : 1.1f);
         ShadowFx.crackle(level, p, (float) radius, heavy ? 3 : 2);
         AABB box = new AABB(p.x - radius, p.y - 1, p.z - radius, p.x + radius, p.y + 4, p.z + radius);

@@ -181,6 +181,7 @@ public class FractureTask implements SkillTask {
         level.sendParticles(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK,
                 level.getBlockState(net.minecraft.core.BlockPos.containing(c.x, c.y - 0.5, c.z))), c.x, c.y + 0.5, c.z, 200, 4.0, 0.5, 4.0, 0.6);
 
+        com.alastor.staff.util.TerrainBreaker.smash(level, owner, c, 3.5, 40);
         for (LivingEntity e : swallowed.values()) {
             if (!e.isAlive()) continue;
             e.invulnerableTime = 0;

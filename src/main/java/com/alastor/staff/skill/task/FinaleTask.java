@@ -23,8 +23,8 @@ import java.util.List;
  * hoist them into the air, then all the tentacles constrict together on one point until it bursts.
  */
 public class FinaleTask implements SkillTask {
-    private static final double AREA = 12;
-    private static final int GRAB = 6, LIFT_END = 28, SQUEEZE_END = 40;
+    private static final double AREA = 18;
+    private static final int GRAB = 8, LIFT_END = 32, SQUEEZE_END = 52;
 
     private final Player owner;
     private final Vec3 center;
@@ -38,12 +38,12 @@ public class FinaleTask implements SkillTask {
     public FinaleTask(Player owner, Vec3 center) {
         this.owner = owner;
         this.center = center;
-        this.core = center.add(0, 7.5, 0);
+        this.core = center.add(0, 11, 0);
     }
 
     private Vec3 slot(int i) {
         double a = i * 2.4;
-        double r = victims.size() <= 1 ? 0 : 1.2;
+        double r = victims.size() <= 1 ? 0 : 1.6;
         return core.add(Math.cos(a) * r, (i % 3) * 0.6 - 0.6, Math.sin(a) * r);
     }
 
@@ -51,12 +51,13 @@ public class FinaleTask implements SkillTask {
     public boolean tick(ServerLevel level) {
         age++;
         if (age == 1) {
-            ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, center, 14f, SQUEEZE_END + 30, 8, 0f);   // the one giant sigil
-            ShadowFx.spread(level, center, 15f, SQUEEZE_END + 30, 10);
+            ShadowFxEntity.spawn(level, ShadowFxEntity.SIGIL, center, 22f, SQUEEZE_END + 40, 10, 0f);   // the one giant sigil
+            ShadowFx.spread(level, center, 24f, SQUEEZE_END + 40, 14);
+            ModSounds.play(level, center, ModSounds.RADIO_TUNE, 3.0f, 0.6f);
             ModSounds.play(level, center, ModSounds.SHADOW_HUM, 2.5f, 0.9f);
             AABB box = new AABB(center.x - AREA, center.y - 4, center.z - AREA, center.x + AREA, center.y + 10, center.z + AREA);
             for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box, x -> Targeting.isValid(owner, x))) {
-                if (victims.size() >= 10) break;
+                if (victims.size() >= 16) break;
                 victims.add(e);
             }
         }
@@ -70,19 +71,19 @@ public class FinaleTask implements SkillTask {
                 Double g = Targeting.findGround(level, p.x, v.getY(), p.z);
                 Vec3 root = new Vec3(p.x, g != null ? g : center.y, p.z);
                 TentacleEntity t = TentacleEntity.spawn(level, root, v.position().add(0, v.getBbHeight() * 0.5, 0).subtract(root),
-                        SQUEEZE_END - GRAB + 12, 4, 2.0f);
+                        SQUEEZE_END - GRAB + 12, 4, 2.4f);
                 if (t != null) grabbers.add(t);
                 debris(level, root, 30);
             }
             // a ring of colossal tentacles around the sigil
-            for (int k = 0; k < 8; k++) {
-                double a = k * Math.PI * 2 / 8;
-                Vec3 p = center.add(Math.cos(a) * 11, 0, Math.sin(a) * 11);
+            for (int k = 0; k < 12; k++) {
+                double a = k * Math.PI * 2 / 12;
+                Vec3 p = center.add(Math.cos(a) * 16, 0, Math.sin(a) * 16);
                 Double g = Targeting.findGround(level, p.x, center.y, p.z);
                 if (g == null) continue;
                 Vec3 root = new Vec3(p.x, g, p.z);
-                Vec3 tip = new Vec3(-Math.cos(a) * 2, 15, -Math.sin(a) * 2);
-                TentacleEntity t = TentacleEntity.spawn(level, root, tip, SQUEEZE_END - GRAB + 14, 7, 2.6f);
+                Vec3 tip = new Vec3(-Math.cos(a) * 3, 22 + (k % 3) * 2, -Math.sin(a) * 3);
+                TentacleEntity t = TentacleEntity.spawn(level, root, tip, SQUEEZE_END - GRAB + 14, 8, 3.3f);
                 if (t != null) { ring.add(t); ringStart.add(tip); }
                 debris(level, root, 40);
             }
@@ -112,6 +113,13 @@ public class FinaleTask implements SkillTask {
                 Vec3 from = ringStart.get(k);
                 t.setTip(from.add(want.subtract(from).scale(Math.min(1.0, coil + 0.2))));
             }
+            if (age % 3 == 0) {
+                // a storm gathers: lightning from the sky into the ring
+                double a = level.random.nextDouble() * Math.PI * 2, rr = level.random.nextDouble() * AREA;
+                ShadowFxEntity.bolt(level, center.add(Math.cos(a) * rr * 0.4, 32, Math.sin(a) * rr * 0.4),
+                        center.add(Math.cos(a) * rr, 0.2, Math.sin(a) * rr), level.random.nextFloat() < 0.25f, 8);
+            }
+            if (age == LIFT_END + 1) ShadowFxEntity.spawn(level, ShadowFxEntity.ORB, core, 3.2f, SQUEEZE_END - LIFT_END + 4, SQUEEZE_END - LIFT_END, 0f);
             if (squeezing) {
                 level.sendParticles(ShadowFx.BLACK, core.x, core.y, core.z, 25, 1.6, 1.6, 1.6, 0);
                 if (age % 2 == 0) ShadowFx.zap(level, core.add((level.random.nextDouble() - 0.5) * 6, -3, (level.random.nextDouble() - 0.5) * 6), core, 4);
@@ -133,15 +141,20 @@ public class FinaleTask implements SkillTask {
             t.setTip(new Vec3(out.x, 0, out.z).normalize().scale(6).add(0, 12, 0));
             t.retract();
         }
-        ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, center, 3.5f, 50, 5, 0f);
-        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, center, 20f, 22, 14, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, center, 6.0f, 60, 5, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.PILLAR, center, 2.5f, 70, 3, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, center, 32f, 28, 20, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, center, 22f, 22, 14, 0f);
+        ShadowFxEntity.spawn(level, ShadowFxEntity.RING, center, 12f, 16, 8, 0f);
+        com.alastor.staff.util.TerrainBreaker.smash(level, owner, center, 4.0, 60);
+        ShadowFx.crackle(level, center, (float) AREA, 10);
         level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, core.x, core.y, core.z, 3, 1.2, 1.2, 1.2, 0);
         level.sendParticles(ParticleTypes.SONIC_BOOM, core.x, core.y, core.z, 4, 1.5, 1.5, 1.5, 0);
         level.sendParticles(ShadowFx.BLACK, core.x, core.y, core.z, 250, 4, 4, 4, 0);
         level.sendParticles(ShadowFx.GREEN, core.x, core.y, core.z, 160, 3, 3, 3, 0);
-        for (int k = 0; k < 10; k++) {
-            double a = k * Math.PI * 2 / 10;
-            ShadowFxEntity.bolt(level, core, center.add(Math.cos(a) * 10, 0.1, Math.sin(a) * 10), k % 4 == 0, 9);
+        for (int k = 0; k < 16; k++) {
+            double a = k * Math.PI * 2 / 16;
+            ShadowFxEntity.bolt(level, core, center.add(Math.cos(a) * 16, 0.1, Math.sin(a) * 16), k % 4 == 0, 10);
         }
         ModSounds.play(level, core, ModSounds.SHADOW_BOOM, 3.0f, 0.7f);
         level.playSound(null, core.x, core.y, core.z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE,
@@ -150,11 +163,11 @@ public class FinaleTask implements SkillTask {
         for (LivingEntity v : victims) {
             if (!v.isAlive()) continue;
             v.invulnerableTime = 0;
-            Targeting.hurt(owner, v, 30f);
+            Targeting.hurt(owner, v, 40f);
             Vec3 out = v.position().subtract(core);
             Targeting.launch(v, (out.lengthSqr() > 1.0E-3 ? out.normalize() : new Vec3(0, 1, 0)).scale(1.4).add(0, 0.6, 0));
         }
-        AABB box = new AABB(core.x - 8, core.y - 10, core.z - 8, core.x + 8, core.y + 6, core.z + 8);
+        AABB box = new AABB(core.x - 14, core.y - 14, core.z - 14, core.x + 14, core.y + 8, core.z + 14);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box, x -> Targeting.isValid(owner, x) && !victims.contains(x))) {
             Targeting.hurt(owner, e, 12f);
         }
